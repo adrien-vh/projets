@@ -110,7 +110,7 @@ Enjeu du projet :
           </tr>
         </thead>
         <tbody>
-          <tr v-for="step in steps">
+          <tr v-for="step in steps" :key="step.num_step">
             <td>{{ step.title }}</td>
             <td>{{ step.description }}</td>
             <td>{{ formatDate(step.startDate) }}</td>
@@ -137,6 +137,7 @@ Enjeu du projet :
         activePart: "fiche",
         steps: [
           { 
+            num_step: 1,
             startDate: moment("010118", "DDMMYY"),
             endDate: moment(moment("010118", "DDMMYY")).add(5, "months"),
             title: "Première étape avec un nom un peu long",
@@ -144,6 +145,7 @@ Enjeu du projet :
             duration: moment.duration(5, "months")
           },
           { 
+            num_step: 2,
             startDate: moment("010217", "DDMMYY"),
             endDate: moment(moment("010217", "DDMMYY")).add(2, "months"),
             title: "Seconde étape",

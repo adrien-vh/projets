@@ -6,20 +6,20 @@
     <div class="gantt">
       <div class="inner-gantt" :style="{ width: (nbMonths * cellWidth) + 'px'}">
         <div class="gantt-scale" v-if="cellWidth < 40">
-          <div v-for="y in years" :style="{ width: (y.monthsIn * cellWidth) + 'px'}">
+          <div v-for="y in years" :style="{ width: (y.monthsIn * cellWidth) + 'px'}" :key="y.text">
             {{ y.text }}
           </div>
         </div>
         <div class="gantt-scale">
-          <div v-for="m in months" :style="{ width: cellWidth + 'px'}">
+          <div v-for="m in months" :style="{ width: cellWidth + 'px'}" :key="m.text">
             <span v-if="cellWidth < 40">{{ m.month }}</span>
             <span v-else>{{ m.text }}</span>
           </div>
         </div>
-        <div v-for="m in steps.length" class="gantt-row">
-          <div v-for="mo in months" class="gantt-cell" :style="{ width: cellWidth + 'px'}"></div>
+        <div v-for="m in steps.length" class="gantt-row" :key="m">
+          <div v-for="mo in months" class="gantt-cell" :style="{ width: cellWidth + 'px'}" :key="mo.text"></div>
         </div>
-        <div v-for="m in steps.length" class="step-visual" :style="stepVisualStyle(m-1)" :data-num-step="m-1">
+        <div v-for="m in steps.length" class="step-visual" :style="stepVisualStyle(m-1)" :data-num-step="m-1" :key="m">
           {{ steps[m-1].title }}
         </div>
       </div>
