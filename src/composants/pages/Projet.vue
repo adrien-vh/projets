@@ -12,13 +12,13 @@
           <a href="#" :class="{ active: activePart == 'phases' }" @click.prevent="goTo('phases')">Phases</a>
         </li>
         <li>
-          <a href="#" :class="{ active: activePart == 'export' }" @click.prevent="goTo('fiches')">Fiches étape</a>
+          <a href="#" :class="{ active: activePart == 'fiches' }" @click.prevent="goTo('fiches')">Fiches étape</a>
         </li>
       </ul>
     </nav>
     <div class="contenu">
       <!--<h2>Fiche projet</h2>-->
-      <h2 id="fiche">Pôle d'Echange Multimodal</h2>
+      <h2 id="fiche" class="part">Pôle d'Echange Multimodal</h2>
       <table class="infos">
         
         <tr>
@@ -75,30 +75,24 @@ EPFL (Sophie BUGADA)
         </tr>
       </table>      
       
-      <h5 id="analyse">Analyse préalable</h5>
-      <p class="fs-13 txt-justify">
-      Objectifs du projet (que va-t-on faire) ?
-1// Réaliser l’étude technique pré-opérationnelle 3 volets :
- 	Infrastructure ferroviaire
- 	Stationnement
- 	Pôle BUS
-
-2// Créer un Pôle d’Echange Multimodal au cœur du Bassin de Pompey
- 	Déplacement/Aménagement de la halte ferroviaire de Pompey et création d’une véritable gare accompagnée de ses services
- 	Aménagement de l’interconnexion BUS/CAR
- 	Création d’un parking en ouvrage de type silo (P+R)
-
-
+      <h5 id="analyse" class="part">Analyse préalable</h5>
+      <div class="fs-13 txt-justify" id="texteAnalyse" contenteditable="true">
+Objectifs du projet (que va-t-on faire) ?
+Réaliser l’étude technique pré-opérationnelle 3 volets :
+Infrastructure ferroviaire
+Stationnement
+Pôle BUS
+Créer un Pôle d’Echange Multimodal au cœur du Bassin de Pompey
+Déplacement/Aménagement de la halte ferroviaire de Pompey et création d’une véritable gare accompagnée de ses services
+Aménagement de l’interconnexion BUS/CAR
+Création d’un parking en ouvrage de type silo (P+R)
 Finalités du projet :
- 	Amélioration significative de la desserte du territoire et du Parc Eiffel Energie par les transports collectifs pour un report modal des déplacements automobiles pendulaires
- 	Amélioration du bilan environnemental lié aux déplacements et de la qualité de l’air.
+Amélioration significative de la desserte du territoire et du Parc Eiffel Energie par les transports collectifs pour un report modal des déplacements automobiles pendulaires Amélioration du bilan environnemental lié aux déplacements et de la qualité de l’air.
 
 Enjeu du projet :
- 	Articulation des axes de déplacements Nord-Sud et Est-Ouest à l’échelle du SCOT sur le POEM du Bassin de Pompey (Toul-Sillon Lorrain // Luxembourg-Metz-Nancy).
- 	Accessibilité du Bassin de Pompey et du Parc Eiffel Energie par les transports collectifs de grande capacité.
- 	Positionnement au long terme du Bassin de Pompey sur les axes de performance des transports en Région Lorraine.
-  </p>
-      <h5 id="phases">Phases :</h5>
+Articulation des axes de déplacements Nord-Sud et Est-Ouest à l’échelle du SCOT sur le POEM du Bassin de Pompey (Toul-Sillon Lorrain // Luxembourg-Metz-Nancy). Accessibilité du Bassin de Pompey et du Parc Eiffel Energie par les transports collectifs de grande capacité. Positionnement au long terme du Bassin de Pompey sur les axes de performance des transports en Région Lorraine.
+  </div>
+      <h5 id="phases" class="part">Phases :</h5>
       <table class="table table-hover table-sm table-striped steps-table">
         <thead class="">
           <tr>
@@ -121,7 +115,14 @@ Enjeu du projet :
       </table>
       <gantt v-model="steps"></gantt>
       <br>
-      <h5 id="fiches">Fiches étapes :</h5>
+      <h5 id="fiches" class="part">Fiches étapes :</h5>
+      <br>
+      <br>
+      <br>
+      <br>
+      <br>
+      <br>
+      <br>
     </div>
     
   </div>
@@ -166,16 +167,33 @@ Enjeu du projet :
         }, 200);
       }
     },    
-    mounted () { }
+    mounted () { 
+      var me = this
+      CKEDITOR.inline('texteAnalyse')
+      //console.log(CKEDITOR)
+      window.onscroll = function() {
+        var scrollPosition = (document.documentElement.scrollTop || document.body.scrollTop) + 300, 
+            parts = document.querySelectorAll(".part")
+        
+        for (let part of parts) {
+          if (part.offsetTop <= scrollPosition) {
+            me.activePart = part.id
+          }
+        }
+      }
+    }
   }
 </script>
 
 <style scoped lang="scss">
   @import "../../styles/copic";
   #projet {
+
+
     margin: 0 auto;
     max-width: 1050px;
     
+
     h5 {
       border-top: 1px solid $CW10;
       padding-top: 5px;
