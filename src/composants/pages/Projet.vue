@@ -18,41 +18,35 @@
     </nav>
     <div class="contenu">
       <!--<h2>Fiche projet</h2>-->
-      <h2 id="fiche" class="part">Pôle d'Echange Multimodal</h2>
+
+      <h2 id="fiche" v-show="!editing">{{ projet.nom }}</h2>
+      <input type="text" v-model="projet.nom" placeholder="Nom du projet" class="h2-size serif" v-show="editing">
       <table class="infos">
         
         <tr>
-          <th colspan="4">Descriptif :</th>
+          <th colspan="4">Descriptif sommaire :</th>
         </tr>
          <tr>
-          <td colspan="4"><p class="fs-13 txt-justify">
-      La Communauté de Communes porte un projet de création d’un Pôle d’Echanges Multimodal  (POEM) au cœur de son territoire. Dans le cadre de son premier PDU, l’opportunité de cette infrastructure de connexion des différents modes de transport et de déplacement (train/ter, bus urbain, suburbain et interurbain, modes doux, transport à la demande, taxi, parking) a été étudiée (étude INGEROP) et partagée avec l’ensemble des AOT (CRL, CG54, SMTSN).<br><br>
-Le projet de POEM se situe sur le « site Eiffel » au cœur du Bassin de Pompey, à l’articulation des cœurs urbains et du parc Eiffel Energie. Parallèlement, ce site de plus de 4 ha, fait l’objet d’une étude de constructibilité et d’aménagement  en partenariat avec l’EPFL pour la réalisation d’un écoquartier de près de 250 logements et d’équipements publics
-        </p></td>
+          <td colspan="4">
+            <inLongText v-model="projet.description" placeholder="Description du projet" v-show="editing"></inLongText>
+            <div class="fs-13 txt-justify" v-html="projet.description" v-show="!editing"></div>
+          </td>
         </tr>
         <tr>
           <th colspan="2">Pilote politique du projet : </th>
           <th colspan="2">Chef de projet : </th>
         </tr>
         <tr>
-          <td colspan="2">Président, VP Transport et Mobilité</td>
-          <td colspan="2">François Houot</td>
+          <td colspan="2"><input v-model="projet.pilotePolitique" type="text"></td>
+          <td colspan="2"><input v-model="projet.chefProjet" type="text"></td>
         </tr>
         <tr>
           <th colspan="2">Equipe projet interne :  </th>
           <th colspan="2">Instances de pilotage du projet : </th>
         </tr>
         <tr>
-          <td colspan="2">F.HOUOT- J.HOSDEZ SPL</td>
-          <td colspan="2">(COPIL, COTECH, Commissions, groupes de travail) : COPIL/COTECH Site Eiffel</td>
-        </tr>
-        <tr>
-          <th colspan="2">Maître d’ouvrage :  </th>
-          <th colspan="2">Maître d’œuvre : </th>
-        </tr>
-        <tr>
-          <td colspan="2">Communauté de Communes - SPL</td>
-          <td colspan="2">SNCF Réseaux</td>
+          <td colspan="2"><input v-model="projet.pilotePolitique" type="text"></td>
+          <td colspan="2"><input v-model="projet.pilotePolitique" type="text"></td>
         </tr>
         <tr>
           <th colspan="4">Partenaires externes impliqués :</th>
@@ -130,12 +124,20 @@ Articulation des axes de déplacements Nord-Sud et Est-Ouest à l’échelle du 
 
 <script>
   import gantt from '../elements/gantt'
+  import inLongText from '../elements/inLongText'
     
   export default {
-    components: { gantt },
+    components: { inLongText, gantt },
     data () {
       return {
+        editing: true,
         activePart: "fiche",
+        projet: {
+          nom: "",
+          description: "",
+          pilotePolitique: "",
+          chefProjet: ""
+        },
         steps: [
           { 
             num_step: 1,
@@ -169,7 +171,7 @@ Articulation des axes de déplacements Nord-Sud et Est-Ouest à l’échelle du 
     },    
     mounted () { 
       var me = this
-      CKEDITOR.inline('texteAnalyse')
+      //CKEDITOR.inlineAll()
       //console.log(CKEDITOR)
       window.onscroll = function() {
         var scrollPosition = (document.documentElement.scrollTop || document.body.scrollTop) + 300, 
@@ -193,6 +195,16 @@ Articulation des axes de déplacements Nord-Sud et Est-Ouest à l’échelle du 
     margin: 0 auto;
     max-width: 1050px;
     
+
+    input {
+      border-width: 0 0 1px 0;
+      border-color: #000;
+      width: 100%;
+      color: #212529;
+      &.h2-size {
+        font-size: 2rem;
+      }
+    }
 
     h5 {
       border-top: 1px solid $CW10;
@@ -229,6 +241,7 @@ Articulation des axes de déplacements Nord-Sud et Est-Ouest à l’échelle du 
       /*max-width: 800px;*/
       table.infos {
         margin-bottom: 15px;
+        width: 100%;
       }
       
       th {
@@ -239,6 +252,7 @@ Articulation des axes de déplacements Nord-Sud et Est-Ouest à l’échelle du 
       }
       td {
         font-size: 13px;
+        padding-right: 10px;
       }
       .steps-table {
         font-size: 12px;
