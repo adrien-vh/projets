@@ -35,6 +35,10 @@ switch ($action) {
 		define ('SERVER_URL', str_replace(CONSTANTS, "", str_replace(CONSTANTS."/", "", "http://$_SERVER[HTTP_HOST]$_SERVER[REQUEST_URI]")));
 		die('var C = '.json_encode(get_defined_constants(true)['user']));
 		break;
+
+	case LISTE_PROJETS :
+		$retour["test"] = "coucou4";
+		break;
 }
 
 

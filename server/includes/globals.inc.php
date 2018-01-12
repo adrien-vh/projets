@@ -9,4 +9,5 @@
 	define('IPUSER', 				'ipUser');
 	define('LOGIN', 				'login');
 	define('PASSWORD', 				'password');
+	define('LISTE_PROJETS',			'listeProjets');
 	define('USER', 					'user');
