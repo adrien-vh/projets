@@ -39,7 +39,13 @@ switch ($action) {
 	case LISTE_PROJETS :
 		$retour["test"] = "coucou4";
 		break;
+
+	case SAUVE_PROJET :
+		$retour["post"] = $_POST;
+		$retour["requete"] = $bdd->sauveProjet($_POST["projet"]);
+		break;
 }
 
+$retour["DEBUG"] = $bdd->getDbg();
 
 die(json_encode($retour));

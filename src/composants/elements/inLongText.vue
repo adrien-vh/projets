@@ -34,11 +34,11 @@ export default {
     @import "../../styles/copic";
     div.parent {
         position: relative;
-        border-bottom: 1px solid #bbb;
+        border-bottom: 1px solid #dedede;
 
         div.content {
             outline: none;
-            
+            p[style] { margin-bottom: 0 !important; }
         }
     }
 </style>

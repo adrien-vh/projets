@@ -72,13 +72,13 @@
         return moment(momentStart).subtract(1, 'months')
       },
       ganttEndDate () {
-        var momentEnd = this.steps.length > 0 ? this.steps[0].endDate : moment()
+        var momentEnd = this.steps.length > 0 ? this.endDate(this.steps[0]) : moment()
         for (let step of this.steps) {
-          if (step.endDate.isAfter(momentEnd)) {
-            momentEnd = step.endDate
+          if (this.endDate(step).isAfter(momentEnd)) {
+            momentEnd = this.endDate(step)
           }
         }
-        return moment(momentEnd).add(1, 'months')
+        return moment(momentEnd).add(2, 'months')
       },
       years () {
         var i, months = this.months, currentYear = months[0].year, retour = [], monthsIn = 0
@@ -122,15 +122,15 @@
       }
     },
     methods: {
+      endDate (step) {
+        return moment(step.startDate).add(step.duration).subtract(1, "d")
+      },
       updateEndDate (step) {
-        step.endDate = moment(step.startDate).add(step.duration).subtract(1, "d")
+       // step.endDate = moment(step.startDate).add(step.duration).subtract(1, "d")
         this.autoCellWidth()
       },
       validateDates (step) {
-        if (step.endDate.isBefore(step.startDate)) {
-          step.endDate = moment(step.startDate).add(1, "months")
-        }
-        step.duration = moment.duration(Math.round(moment.duration(step.endDate.diff(step.startDate)).asMonths()), "months")
+        //step.duration = moment.duration(Math.round(moment.duration(step.endDate.diff(step.startDate)).asMonths()), "months")
         this.autoCellWidth()
       },
       autoCellWidth () {
@@ -139,7 +139,7 @@
       addStep () {
         this.steps.push({
           startDate: moment(this.ganttEndDate).subtract(1, "months").add(1,"d"),
-          endDate: moment(this.ganttEndDate),
+          //endDate: moment(this.ganttEndDate),
           text: "Nouvelle étape",
           duration: moment.duration(1, "months")
         })
@@ -149,7 +149,7 @@
         return step.startDate.format("D MMM YY")
       },
       stepDuration (step) {
-        return moment.duration(step.endDate.diff(step.startDate)).add(1, "d").humanize().replace(" ", "&nbsp;")
+        return moment.duration(this.endDate(step).diff(step.startDate)).add(1, "d").humanize().replace(" ", "&nbsp;")
       },
       stepVisualStyle (m) {
         
@@ -197,7 +197,7 @@
                       deltaMonths = Math.round(roundedX / me.cellWidth)
                 
                   step.startDate = moment(step.startDate).add(deltaMonths, "months")
-                  step.endDate = moment(step.endDate).add(deltaMonths, "months")
+                  //step.endDate = moment(step.endDate).add(deltaMonths, "months")
                 
                   target.style.webkitTransform = target.style.transform = 'translate(0px, 0px)'
                   //target.style.left = (parseFloat(target.style.left.replace(/\D/g,'')) + roundedX) + 'px'
@@ -210,8 +210,9 @@
                       step = me.steps[parseFloat(target.getAttribute('data-num-step'))]
                   
                   //target.style.width  = roundedWidth + 'px'
-                  step.endDate = moment(step.startDate).add(duration, "months")
-                  me.validateDates(step)
+                  //step.endDate = moment(step.startDate).add(duration, "months")
+                  //me.validateDates(step)
+                  step.duration = duration
                   me.autoCellWidth()
                 })
             }

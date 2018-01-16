@@ -31,7 +31,27 @@ class Bdd {
 			array( ':login' => trim($_login) )
 		);
 	}
+
+	public function sauveProjet($_projet) {
+		return $this->insertObject($_projet, "projet");
+	}
 	
+	private function insertObject($_objet, $_table) {
+		$liste_champs = array();
+		$liste_champs_prefixe = array();
+		$liste_valeurs = array();
+
+		foreach ((array) $_objet as $key => $value) {
+			$liste_champs[] = "`".$key."`";
+			$liste_champs_prefixe[] = ":".$key;
+			$liste_valeurs[":".$key] = $value;
+		}
+
+		$requete = "INSERT INTO `".$_table."` (".implode(", ", $liste_champs).") VALUES (".implode(", ", $liste_champs_prefixe).")";
+
+		return $this->insertFromRequete($requete, $liste_valeurs);;
+	}
+
 	// Test exécution requête
 	private function testExecution($_rq)
 	{

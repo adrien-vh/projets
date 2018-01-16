@@ -5,9 +5,12 @@
 
 	define('ACTION', 				'action');
 	define('CONSTANTS', 			'constants');
+	define('ETAPES', 				'etapes');
 	define('FULL_NAME', 			'fullName');
 	define('IPUSER', 				'ipUser');
 	define('LOGIN', 				'login');
 	define('PASSWORD', 				'password');
+	define('PROJET', 				'projet');
+	define('SAUVE_PROJET', 			'sauveProjet');
 	define('LISTE_PROJETS',			'listeProjets');
 	define('USER', 					'user');
