@@ -32,11 +32,10 @@
   //require("../../vendor/locale/fr.js")
   import interact from '../../vendor/interact.min.js'
   import smallInText from './smallInText'
-  import smallInDate from './smallInDate'
   import smallInDuration from './smallInDuration'
     
   export default {
-    components: { smallInText, smallInDate, smallInDuration },
+    components: { smallInText, smallInDuration },
     props: ['value'],
     watch: {
       value () {

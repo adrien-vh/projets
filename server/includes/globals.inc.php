@@ -4,11 +4,13 @@
 	define ('IP_FILE_EXT',			'ip');
 
 	define('ACTION', 				'action');
+	define('CHARGE_PROJET', 		'chargeProjet');
 	define('CONSTANTS', 			'constants');
 	define('ETAPES', 				'etapes');
 	define('FULL_NAME', 			'fullName');
 	define('IPUSER', 				'ipUser');
 	define('LOGIN', 				'login');
+	define('NUM_PROJET', 			'num_projet');
 	define('PASSWORD', 				'password');
 	define('PROJET', 				'projet');
 	define('SAUVE_PROJET', 			'sauveProjet');

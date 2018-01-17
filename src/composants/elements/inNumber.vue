@@ -1,6 +1,6 @@
 <template>
   <div>
-    <a href="#" @click.prevent="minus" tabindex="-1"><i class="fa fa-minus-square" aria-hidden="true"></i></a>
+    <a href="#" @click.prevent="minus" tabindex="-1" v-show="editable"><i class="fa fa-minus-square" aria-hidden="true"></i></a>
     <input 
            type="text"
            v-model="currentValue"
@@ -8,23 +8,28 @@
            @input="updateValue($event.target.value)"
            :maxlength="maxLength"
            :style="inputStyle()"
+           v-show="editable"
     >
+    <span v-show="!editable">{{ value }}</span>
     <span>{{ suffix }}</span>
-    <a href="#" @click.prevent="plus" tabindex="-1"><i class="fa fa-plus-square" aria-hidden="true"></i></a>
+    <a href="#" @click.prevent="plus" tabindex="-1" v-show="editable"><i class="fa fa-plus-square" aria-hidden="true"></i></a>
   </div>
 </template>
 
 <script>
 export default {
-    data () { return { currentValue : this.value }},
+    data () { return { currentValue : this.value || this.defaultValue }},
 
-    watch: { value (value) { this.currentValue = this.value } },
+    watch: { value (value) { this.currentValue = this.value || this.defaultValue } },
 
     props: {
         suffix: { default: "", type: String },
         maxLength: { default: 10, type: Number },
         value: Number,
-        increment: { default: 1, type: Number }
+        increment: { default: 1, type: Number },
+        editable: Boolean,
+        defaultValue: { default: 0, type: Number },
+        minValue: { default: -99999999999, type: Number }
     },
     methods: {
         isNumber: function(evt) {
@@ -37,10 +42,13 @@ export default {
             }
         },
 
-        updateValue (value) {this.$emit('input', value) },
+        updateValue (value) {
+            this.currentValue = Math.max(value, this.minValue)
+            this.$emit('input', this.currentValue) 
+        },
         inputStyle () { return { width : (this.maxLength * 10) + 'px' } },
         minus () { 
-            this.currentValue = (this.currentValue || 0) - this.increment
+            this.currentValue = Math.max((this.currentValue || 0) - this.increment, this.minValue)
             this.$emit('input', this.currentValue)
         },
         plus () { 

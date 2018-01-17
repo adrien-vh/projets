@@ -35,6 +35,13 @@ class Bdd {
 	public function sauveProjet($_projet) {
 		return $this->insertObject($_projet, "projet");
 	}
+
+	public function chargeProjet($_num_projet) {
+		return $this->objFromRequete(
+			"SELECT * FROM projet WHERE num_projet = :num_projet",
+			array ( ':num_projet' => $_num_projet )
+		);
+	}
 	
 	private function insertObject($_objet, $_table) {
 		$liste_champs = array();

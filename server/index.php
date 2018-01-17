@@ -44,6 +44,10 @@ switch ($action) {
 		$retour["post"] = $_POST;
 		$retour["requete"] = $bdd->sauveProjet($_POST["projet"]);
 		break;
+
+	case CHARGE_PROJET :
+		$retour[PROJET] = $bdd->chargeProjet($_POST[NUM_PROJET]);
+		break;
 }
 
 $retour["DEBUG"] = $bdd->getDbg();

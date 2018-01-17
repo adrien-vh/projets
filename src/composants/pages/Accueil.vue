@@ -1,7 +1,7 @@
 <template>
   <div id="pageAccueil">
     <div id="contBouton">
-      <button class="btn btn-lg btn-primary"><i class="fa fa-plus" aria-hidden="true"></i> Nouveau projet</button>
+      <button class="btn btn-lg btn-primary" @click="newProject"><i class="fa fa-plus" aria-hidden="true"></i> Nouveau projet</button>
     </div>
     <h2>Synthèses</h2>
     <div id="listeSyntheses">
@@ -68,7 +68,13 @@
 </template>
 
 <script>
-export default {  }
+export default { 
+  methods : {
+    newProject () {
+      this.$router.push('/projet')
+    }
+  }
+ }
 </script>
 
 <style scoped lang="scss">

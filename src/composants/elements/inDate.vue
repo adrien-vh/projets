@@ -3,7 +3,6 @@
     <input 
            type="text"
            v-model="currentValue"
-           :placeholder="placeholder"
            @keyup="onKeyUp"
            @blur="onBlur"
            maxlength="10"
@@ -26,8 +25,7 @@ export default {
     }
   },
   props: {
-    value: Object,
-    placeholder: String
+    value: Object
   },
   computed: {
     displayedValue () { return this.value.format("D MMM YY") }

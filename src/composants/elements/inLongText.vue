@@ -1,9 +1,9 @@
 <template>
     <div class="parent">
-       
-        <div class="fs-13 txt-justify content" contenteditable="true">
+        <div class="fs-13 txt-justify content" contenteditable="true" v-show="editable">
             {{ value }}
         </div>
+        <div v-html="value" v-show="!editable" class="txt-justify"></div>
     </div>
 </template>
 
@@ -16,7 +16,8 @@ export default {
   },
   props: {
     value: String,
-    placeholder: String
+    placeholder: String,
+    editable: Boolean
   },
   methods: {},
   mounted () {
@@ -34,11 +35,12 @@ export default {
     @import "../../styles/copic";
     div.parent {
         position: relative;
-        border-bottom: 1px solid #dedede;
+       
 
         div.content {
             outline: none;
             p[style] { margin-bottom: 0 !important; }
+             border-bottom: 1px solid #dedede;
         }
     }
 </style>
