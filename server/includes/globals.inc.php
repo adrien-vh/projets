@@ -6,9 +6,12 @@
 	define('ACTION', 				'action');
 	define('CHARGE_PROJET', 		'chargeProjet');
 	define('CONSTANTS', 			'constants');
+	define('CREER_VERSION', 		'creerVersion');
 	define('ETAPES', 				'etapes');
 	define('FULL_NAME', 			'fullName');
+	define('INSTANCES',				'instances');
 	define('IPUSER', 				'ipUser');
+	define('IS_LAST_VERSION', 		'isLastVersion');
 	define('LOGIN', 				'login');
 	define('NUM_PROJET', 			'num_projet');
 	define('PASSWORD', 				'password');
@@ -16,3 +19,4 @@
 	define('SAUVE_PROJET', 			'sauveProjet');
 	define('LISTE_PROJETS',			'listeProjets');
 	define('USER', 					'user');
+	define('VALIDE_PROJET',			'valideProjet');

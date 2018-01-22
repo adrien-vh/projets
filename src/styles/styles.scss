@@ -1,3 +1,5 @@
+@import "copic";
+
 body {
   background-color: #fafafa;
   font-family: ibm-plex-sans;
@@ -12,10 +14,13 @@ body {
 .txt-right { text-align: right;}
 .txt-center { text-align: center;}
 
+.txt-red { color: $CR39; &:hover {  color: $CR39; } }
+
 .serif { font-family: ibm-plex-serif; }
 .bold { font-weight: bold; }
 
 .w100 { width: 100%; }
+.w20p { width: 20px; }
 .w50p { width: 50px; }
 .w100p { width: 100px; }
 .w400p { width: 400px; }

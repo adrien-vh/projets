@@ -41,12 +41,25 @@ switch ($action) {
 		break;
 
 	case SAUVE_PROJET :
-		$retour["post"] = $_POST;
-		$retour["requete"] = $bdd->sauveProjet($_POST["projet"]);
+		// $retour["post"] = $_POST;
+		$retour[NUM_PROJET] = $bdd->sauveProjet($_POST[PROJET], $_POST[NUM_PROJET]);
+		$bdd->sauveInstances($_POST[INSTANCES] ,$retour[NUM_PROJET]);
+		$retour[ETAPES] = $bdd->sauveEtapes($_POST[ETAPES] ,$retour[NUM_PROJET]);
 		break;
 
 	case CHARGE_PROJET :
 		$retour[PROJET] = $bdd->chargeProjet($_POST[NUM_PROJET]);
+		$retour[INSTANCES] = $bdd->chargeInstances($_POST[NUM_PROJET]);
+		$retour[ETAPES] = $bdd->chargeEtapes($_POST[NUM_PROJET]);
+		$retour[IS_LAST_VERSION] = $bdd->isLastVersion($_POST[NUM_PROJET]);
+		break;
+
+	case CREER_VERSION :
+		$retour[NUM_PROJET] = $bdd->creeVersion($_POST[NUM_PROJET]);
+		break;
+
+	case VALIDE_PROJET :
+		$bdd->valideProjet($_POST[NUM_PROJET]);
 		break;
 }
 

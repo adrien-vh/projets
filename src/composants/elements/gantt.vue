@@ -20,7 +20,7 @@
           <div v-for="mo in months" class="gantt-cell" :style="{ width: cellWidth + 'px'}" :key="mo.text"></div>
         </div>
         <div v-for="m in steps.length" class="step-visual" :style="stepVisualStyle(m-1)" :data-num-step="m-1" :key="m">
-          {{ steps[m-1].title }}
+          {{ steps[m-1].nom }}
         </div>
       </div>
     </div>
@@ -36,13 +36,16 @@
     
   export default {
     components: { smallInText, smallInDuration },
-    props: ['value'],
+    props: ['value', 'update'],
     watch: {
       value () {
         this.steps = this.value
       },
       steps () {
         setTimeout(this.setInteract, 500)
+      },
+      update () {
+        this.autoCellWidth()
       }
     },
     data () {
@@ -61,10 +64,10 @@
     computed: {
       nbMonths () { return this.ganttEndDate.diff(this.ganttStartDate, "months") },
       ganttStartDate () {
-        var momentStart = this.steps.length > 0 ? this.steps[0].startDate : moment()
+        var momentStart = this.steps.length > 0 ? this.steps[0].debut : moment()
         for (let step of this.steps) {
-          if (step.startDate.isBefore(momentStart)) {
-            momentStart = step.startDate
+          if (step.debut.isBefore(momentStart)) {
+            momentStart = step.debut
           }
         }
         console.log(momentStart.format())
@@ -122,14 +125,14 @@
     },
     methods: {
       endDate (step) {
-        return moment(step.startDate).add(step.duration).subtract(1, "d")
+        return moment(step.debut).add(step.duree).subtract(1, "d")
       },
       updateEndDate (step) {
-       // step.endDate = moment(step.startDate).add(step.duration).subtract(1, "d")
+       // step.endDate = moment(step.startDate).add(step.duree).subtract(1, "d")
         this.autoCellWidth()
       },
       validateDates (step) {
-        //step.duration = moment.duration(Math.round(moment.duration(step.endDate.diff(step.startDate)).asMonths()), "months")
+        //step.duree = moment.duration(Math.round(moment.duration(step.endDate.diff(step.startDate)).asMonths()), "months")
         this.autoCellWidth()
       },
       autoCellWidth () {
@@ -137,25 +140,25 @@
       },
       addStep () {
         this.steps.push({
-          startDate: moment(this.ganttEndDate).subtract(1, "months").add(1,"d"),
+          debuy: moment(this.ganttEndDate).subtract(1, "months").add(1,"d"),
           //endDate: moment(this.ganttEndDate),
           text: "Nouvelle étape",
-          duration: moment.duration(1, "months")
+          duree: moment.duration(1, "months")
         })
         this.autoCellWidth()
       },
       stepStart (step) {
-        return step.startDate.format("D MMM YY")
+        return step.debut.format("D MMM YY")
       },
       stepDuration (step) {
-        return moment.duration(this.endDate(step).diff(step.startDate)).add(1, "d").humanize().replace(" ", "&nbsp;")
+        return moment.duration(this.endDate(step).diff(step.debut)).add(1, "d").humanize().replace(" ", "&nbsp;")
       },
       stepVisualStyle (m) {
         
         return {
           top : (30 + (this.cellWidth < 40 ? 30 : 0) + 4 + (30 * m)) + 'px',
-          left : (this.steps[m].startDate.diff(this.ganttStartDate, 'months') * this.cellWidth) + 'px',
-          width : (this.steps[m].duration.asMonths() * this.cellWidth) + 'px'
+          left : (this.steps[m].debut.diff(this.ganttStartDate, 'months') * this.cellWidth) + 'px',
+          width : (this.steps[m].duree.asMonths() * this.cellWidth) + 'px'
         }
       },
       dayName (day) {
@@ -195,7 +198,7 @@
                       roundedX = me.cellWidth * Math.round(x / me.cellWidth),
                       deltaMonths = Math.round(roundedX / me.cellWidth)
                 
-                  step.startDate = moment(step.startDate).add(deltaMonths, "months")
+                  step.debut = moment(step.debut).add(deltaMonths, "months")
                   //step.endDate = moment(step.endDate).add(deltaMonths, "months")
                 
                   target.style.webkitTransform = target.style.transform = 'translate(0px, 0px)'
@@ -204,14 +207,14 @@
                   me.autoCellWidth()
                 }).on('resizeend', function (event){
                   var target = event.target,
-                      duration = Math.max(1, Math.round(parseFloat(target.style.width.replace(/[^\d\.]/g,'') / me.cellWidth))),
-                      //roundedWidth = me.cellWidth * duration  - 1,
+                      duree = Math.max(1, Math.round(parseFloat(target.style.width.replace(/[^\d\.]/g,'') / me.cellWidth))),
+                      //roundedWidth = me.cellWidth * duree  - 1,
                       step = me.steps[parseFloat(target.getAttribute('data-num-step'))]
                   
                   //target.style.width  = roundedWidth + 'px'
-                  //step.endDate = moment(step.startDate).add(duration, "months")
+                  //step.endDate = moment(step.debut).add(duree, "months")
                   //me.validateDates(step)
-                  step.duration = duration
+                  step.duree = duree
                   me.autoCellWidth()
                 })
             }

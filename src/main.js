@@ -4,6 +4,7 @@ import Vue from 'vue'
 import App from './composants/App.vue'
 import store from './store.js'
 import router from './router.js'
+import Global from './composants/Global.vue'
 
 
 require("./styles/ibm-type.css")
@@ -18,6 +19,8 @@ const SERVER_URL = 'http://projets/server/';
 
 console.log(C)
 moment.locale('fr')
+
+Vue.mixin(Global)
 
 new Vue({
   el: '#app',
