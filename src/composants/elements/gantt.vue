@@ -1,16 +1,13 @@
 <template>
-  <div class="gantt">
-    <!--Durée : <smallInDuration v-model="steps[0].duration"></smallInDuration><br>-->
-   <!-- <button v-for="scale in scales" class="btn" @click="cellWidth = scale">{{scale}}</button>
-    <button class="btn" @click="autoCellWidth">auto</button>-->
+  <div class="gantt-container">
     <div class="gantt">
-      <div class="inner-gantt" :style="{ width: (nbMonths * cellWidth) + 'px'}">
+      <div class="inner-gantt" :style="{ width: (nbMonths * cellWidth) + 'px'}" ref="innerGantt">
         <div class="gantt-scale" v-if="cellWidth < 40">
           <div v-for="y in years" :style="{ width: (y.monthsIn * cellWidth) + 'px'}" :key="y.text">
             {{ y.text }}
           </div>
         </div>
-        <div class="gantt-scale">
+        <div class="gantt-scale" v-if="cellWidth > 25">
           <div v-for="m in months" :style="{ width: cellWidth + 'px'}" :key="m.text">
             <span v-if="cellWidth < 40">{{ m.month }}</span>
             <span v-else>{{ m.text }}</span>
@@ -19,8 +16,9 @@
         <div v-for="m in steps.length" class="gantt-row" :key="m">
           <div v-for="mo in months" class="gantt-cell" :style="{ width: cellWidth + 'px'}" :key="mo.text"></div>
         </div>
-        <div v-for="m in steps.length" class="step-visual" :style="stepVisualStyle(m-1)" :data-num-step="m-1" :key="m">
-          {{ steps[m-1].nom }}
+        <div v-for="m in steps.length" :key="m" >
+          <div v-if="!steps[m-1].new" class="step-visual" :style="stepVisualStyleInitial(m-1)" :data-num-step="m-1"></div>
+          <div class="step-visual changeable" :style="stepVisualStyle(m-1)" :data-num-step="m-1">{{ steps[m-1].nom }}</div>
         </div>
       </div>
     </div>
@@ -28,15 +26,13 @@
 </template>
 
 <script>
-  //require("../../vendor/moment.js")
-  //require("../../vendor/locale/fr.js")
   import interact from '../../vendor/interact.min.js'
   import smallInText from './smallInText'
   import smallInDuration from './smallInDuration'
     
   export default {
     components: { smallInText, smallInDuration },
-    props: ['value', 'update'],
+    props: ['value', 'editable'],
     watch: {
       value () {
         this.steps = this.value
@@ -44,8 +40,8 @@
       steps () {
         setTimeout(this.setInteract, 500)
       },
-      update () {
-        this.autoCellWidth()
+      editable () {
+        this.setInteract()
       }
     },
     data () {
@@ -58,7 +54,8 @@
         txt: {time: moment().format("DD/MM/YYYY")},
         cellWidth: 20,
         displayDuration: true,
-        steps: this.value
+        steps: this.value,
+        interval: null
       }
     },
     computed: {
@@ -69,6 +66,9 @@
           if (step.debut.isBefore(momentStart)) {
             momentStart = step.debut
           }
+          if (step.debutInitial.isBefore(momentStart)) {
+            momentStart = step.debutInitial
+          }
         }
         console.log(momentStart.format())
         return moment(momentStart).subtract(1, 'months')
@@ -78,6 +78,10 @@
         for (let step of this.steps) {
           if (this.endDate(step).isAfter(momentEnd)) {
             momentEnd = this.endDate(step)
+          }
+      
+          if (this.endDateInitial(step).isAfter(momentEnd)) {
+            momentEnd = this.endDateInitial(step)
           }
         }
         return moment(momentEnd).add(2, 'months')
@@ -127,44 +131,58 @@
       endDate (step) {
         return moment(step.debut).add(step.duree).subtract(1, "d")
       },
-      updateEndDate (step) {
-       // step.endDate = moment(step.startDate).add(step.duree).subtract(1, "d")
-        this.autoCellWidth()
-      },
-      validateDates (step) {
-        //step.duree = moment.duration(Math.round(moment.duration(step.endDate.diff(step.startDate)).asMonths()), "months")
-        this.autoCellWidth()
+      endDateInitial (step) {
+        return moment(step.debutInitial).add(step.dureeInitial).subtract(1, "d")
       },
       autoCellWidth () {
-        this.cellWidth = Math.floor(10 * $(this.$el).find(".gantt").width() / this.nbMonths) / 10
-      },
-      addStep () {
-        this.steps.push({
-          debuy: moment(this.ganttEndDate).subtract(1, "months").add(1,"d"),
-          //endDate: moment(this.ganttEndDate),
-          text: "Nouvelle étape",
-          duree: moment.duration(1, "months")
-        })
-        this.autoCellWidth()
-      },
-      stepStart (step) {
-        return step.debut.format("D MMM YY")
-      },
-      stepDuration (step) {
-        return moment.duration(this.endDate(step).diff(step.debut)).add(1, "d").humanize().replace(" ", "&nbsp;")
+        var me = this
+        setTimeout(
+          function (){ me.cellWidth = Math.floor(10 * $(me.$el).find(".gantt").width() / me.nbMonths) / 10; },
+          250
+        )
       },
       stepVisualStyle (m) {
-        
+        var bgColor = "#999", i
+
+        for (i = 0; i < this.$store.state.typesEtapes.length; i += 1) {
+          if (this.$store.state.typesEtapes[i].num_typeEtape === this.steps[m].num_typeEtape) {
+            bgColor = "#" + this.$store.state.typesEtapes[i].couleur
+          }
+        }
+
+      console.log(this.cellWidth)
+
         return {
-          top : (30 + (this.cellWidth < 40 ? 30 : 0) + 4 + (30 * m)) + 'px',
+          top : ((this.cellWidth < 25 ? 0 : 30) + (this.cellWidth < 40 ? 30 : 0) + 6 + (30 * m)) + 'px',
           left : (this.steps[m].debut.diff(this.ganttStartDate, 'months') * this.cellWidth) + 'px',
-          width : (this.steps[m].duree.asMonths() * this.cellWidth) + 'px'
+          width : (this.steps[m].duree.asMonths() * this.cellWidth) + 'px',
+          'background-color': bgColor,
+          height: '16px',
+          'padding-top': '1px'
+        }
+      },
+      stepVisualStyleInitial (m) {
+        var bgColor = "#999", i
+
+        for (i = 0; i < this.$store.state.typesEtapes.length; i += 1) {
+          if (this.$store.state.typesEtapes[i].num_typeEtape === this.steps[m].num_typeEtape) {
+            bgColor = "#" + this.$store.state.typesEtapes[i].couleur
+          }
+        }
+
+        return {
+          top : ((this.cellWidth < 25 ? 0 : 30) + (this.cellWidth < 40 ? 30 : 0) + 4 + (30 * m)) + 'px',
+          left : (this.steps[m].debutInitial.diff(this.ganttStartDate, 'months') * this.cellWidth) + 'px',
+          width : (this.steps[m].dureeInitial.asMonths() * this.cellWidth) + 'px',
+          'background-color': bgColor,
+          opacity: 0.5,
+          height: '20px',
+          'padding-top': '2px'
         }
       },
       dayName (day) {
         var dayNames = ["lu", "ma", "me", "je", "ve", "sa", "di"]
         return dayNames[(this.firstDay + day - 2) % 7]
-        //return moment(this.ganttStartDate,"DDMMYY").add(day-1, "day").format('dd')
       },
       styleDiv (size) {
         return {
@@ -172,59 +190,70 @@
           width: size + 'px'
         }
       },
-
       setInteract () {
         var me = this
-        $(this.$el).find(".step-visual").each(
-          function () {
-            if (!interact.isSet(this)) {
-              interact(this)
-                .draggable({})
-                .resizable({ edges: { left: false, right: true, bottom: false, top: false } })
-                .on('dragmove', function (event) {
-                   var target = event.target,
-                            x = (parseFloat(target.getAttribute('data-x')) || 0) + event.dx
+        if (this.editable) {
+          $(this.$el).find(".step-visual.changeable").each(
+            function () {
+              if (!interact.isSet(this)) {
+                interact(this)
+                  .draggable({})
+                  .resizable({ edges: { left: false, right: true, bottom: false, top: false } })
+                  .on('dragmove', function (event) {
+                    var target = event.target,
+                              x = (parseFloat(target.getAttribute('data-x')) || 0) + event.dx
 
-                    target.style.webkitTransform = target.style.transform = 'translate(' + x + 'px, 0px)'
-                    target.setAttribute('data-x', x)
-                 })
-                .on('resizemove', function (event) {
-                  event.target.style.width  = (me.cellWidth * Math.round(Math.max(event.rect.width, me.cellWidth) / me.cellWidth)) + 'px'
-                })
-                .on('dragend', function (event) {
-                  var target = event.target,
-                      step = me.steps[parseFloat(target.getAttribute('data-num-step'))],
-                      x = (parseFloat(target.getAttribute('data-x')) || 0),
-                      roundedX = me.cellWidth * Math.round(x / me.cellWidth),
-                      deltaMonths = Math.round(roundedX / me.cellWidth)
-                
-                  step.debut = moment(step.debut).add(deltaMonths, "months")
-                  //step.endDate = moment(step.endDate).add(deltaMonths, "months")
-                
-                  target.style.webkitTransform = target.style.transform = 'translate(0px, 0px)'
-                  //target.style.left = (parseFloat(target.style.left.replace(/\D/g,'')) + roundedX) + 'px'
-                  target.setAttribute('data-x', '0')               
-                  me.autoCellWidth()
-                }).on('resizeend', function (event){
-                  var target = event.target,
-                      duree = Math.max(1, Math.round(parseFloat(target.style.width.replace(/[^\d\.]/g,'') / me.cellWidth))),
-                      //roundedWidth = me.cellWidth * duree  - 1,
-                      step = me.steps[parseFloat(target.getAttribute('data-num-step'))]
+                      target.style.webkitTransform = target.style.transform = 'translate(' + x + 'px, 0px)'
+                      target.setAttribute('data-x', x)
+                  })
+                  .on('resizemove', function (event) {
+                    event.target.style.width  = (me.cellWidth * Math.round(Math.max(event.rect.width, me.cellWidth) / me.cellWidth)) + 'px'
+                  })
+                  .on('dragend', function (event) {
+                    var target = event.target,
+                        step = me.steps[parseFloat(target.getAttribute('data-num-step'))],
+                        x = (parseFloat(target.getAttribute('data-x')) || 0),
+                        roundedX = me.cellWidth * Math.round(x / me.cellWidth),
+                        deltaMonths = Math.round(roundedX / me.cellWidth)
                   
-                  //target.style.width  = roundedWidth + 'px'
-                  //step.endDate = moment(step.debut).add(duree, "months")
-                  //me.validateDates(step)
-                  step.duree = duree
-                  me.autoCellWidth()
-                })
+                    step.debut = moment(step.debut).add(deltaMonths, "months")
+                                      
+                    target.style.webkitTransform = target.style.transform = 'translate(0px, 0px)'
+                    
+                    target.setAttribute('data-x', '0')               
+                  }).on('resizeend', function (event){
+                    var target = event.target,
+                        duree = Math.max(1, Math.round(parseFloat(target.style.width.replace(/[^\d\.]/g,'') / me.cellWidth))),
+                        step = me.steps[parseFloat(target.getAttribute('data-num-step'))]
+                    
+                    step.duree = moment.duration(duree, "months")
+                  })
+              }
             }
-          }
-        )
+          )
+        } else {
+          $(this.$el).find(".step-visual.changeable").each(
+            function () {
+              console.log("ici")
+              if (interact.isSet(this)) {
+                interact(this).unset()
+              }
+            }
+          )
+        }
       },
     },    
     mounted () {
+      var me = this
       this.setInteract()
-      this.autoCellWidth()
+      this.interval = setInterval (function () {
+        me.autoCellWidth()
+      }, 1000)
+    },
+    beforeDestroy () {
+      if (this.interval) {
+        clearInterval(this.interval)
+      }
     }
   }
 </script>
@@ -235,7 +264,7 @@
   $lineHeight: 30px;
   $headerWidth: 300px;
   
-  .gantt {
+  .gantt-container {
     font-size: 14px;
     position: relative;
     text-align: left;
@@ -247,18 +276,17 @@
       overflow-x: scroll;
       border-left : 1px solid #ddd;
       border-top : 1px solid #ddd;
+      overflow: hidden;
       .inner-gantt {
         
         div.step-visual {
           position: absolute;
-          height: 20px;
           border-radius: 3px;
-          background-color: $CY35;
+          /*background-color: $CY35;*/
           -webkit-transform: translate(0, 0);
           transform: translate(0, 0);
           padding-left: 10px;
           font-size: 11px;
-          padding-top: 2px;
             -webkit-touch-callout: none; /* iOS Safari */
     -webkit-user-select: none; /* Safari */
      -khtml-user-select: none; /* Konqueror HTML */
@@ -266,7 +294,7 @@
         -ms-user-select: none; /* Internet Explorer/Edge */
             user-select: none; 
            white-space: nowrap;
-          overflow: hidden;
+         // overflow: hidden;
         }
 
         .gantt-scale {

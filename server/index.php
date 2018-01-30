@@ -37,14 +37,21 @@ switch ($action) {
 		break;
 
 	case LISTE_PROJETS :
-		$retour["test"] = "coucou4";
+		$retour[LISTE_PROJETS] = $bdd->listeProjets();
 		break;
 
 	case SAUVE_PROJET :
-		// $retour["post"] = $_POST;
+		$_POST[INSTANCES] = isset($_POST[INSTANCES]) ? $_POST[INSTANCES] : array();
+		$_POST[ETAPES] = isset($_POST[ETAPES]) ? $_POST[ETAPES] : array();
+
 		$retour[NUM_PROJET] = $bdd->sauveProjet($_POST[PROJET], $_POST[NUM_PROJET]);
 		$bdd->sauveInstances($_POST[INSTANCES] ,$retour[NUM_PROJET]);
 		$retour[ETAPES] = $bdd->sauveEtapes($_POST[ETAPES] ,$retour[NUM_PROJET]);
+
+		if ($_POST[VALIDE_PROJET] == '1') {
+			$bdd->valideProjet($retour[NUM_PROJET]);
+		}
+
 		break;
 
 	case CHARGE_PROJET :
@@ -57,9 +64,9 @@ switch ($action) {
 	case CREER_VERSION :
 		$retour[NUM_PROJET] = $bdd->creeVersion($_POST[NUM_PROJET]);
 		break;
-
-	case VALIDE_PROJET :
-		$bdd->valideProjet($_POST[NUM_PROJET]);
+	
+	case TYPES_ETAPES :
+		$retour[TYPES_ETAPES] = $bdd->typesEtapes();
 		break;
 }
 

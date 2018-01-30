@@ -5,10 +5,11 @@ body {
   font-family: ibm-plex-sans;
 }
 
-.fs-10 { font-size: 10px; }
-.fs-12 { font-size: 12px; }
-.fs-13 { font-size: 13px; }
-.fs-15 { font-size: 15px; }
+.fs-10 { font-size: 10px !important; }
+.fs-12 { font-size: 12px !important; }
+.fs-13 { font-size: 13px !important; }
+.fs-15 { font-size: 15px !important; }
+.fs-18 { font-size: 18px !important; }
 
 .txt-justify { text-align: justify;}
 .txt-right { text-align: right;}
@@ -27,5 +28,8 @@ body {
 
 .mt10 { margin-top: 10px; }
 .mb10 { margin-bottom: 10px; }
+.ml20 { margin-left: 20px; }
+
+.ib { display: inline-block; }
 
 .pointer { cursor: pointer; }

@@ -1,7 +1,7 @@
 <template>
   <div id="app">
-    <menuHaut></menuHaut>
-    <div id="routerView">
+    <menuHaut v-show="$store.state.user.connected"></menuHaut>
+    <div id="routerView" v-show="$store.state.user.connected">
       <router-view></router-view>
     </div>
     <loginForm v-show="!$store.state.user.connected"></loginForm>

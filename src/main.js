@@ -29,5 +29,6 @@ new Vue({
   render: h => h(App),
   mounted () {
     this.$store.dispatch('connectUserFromIp')
+    this.$store.dispatch('loadTypesEtapes')
   }
 })

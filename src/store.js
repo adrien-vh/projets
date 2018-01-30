@@ -13,6 +13,7 @@ export default new Vuex.Store ({
       login: null,
       fullName: null
     },
+    typesEtapes: [],
     server : {
       runningQueries : 0,
       call (action, callback = null, datas = {}) {
@@ -42,6 +43,9 @@ export default new Vuex.Store ({
         $.extend(state.user, state.ipUser)
         state.user.connected = true
       }
+    },
+    setTypesEtapes (state, typesEtapes) {
+      state.typesEtapes = typesEtapes
     }
   },
   actions: {
@@ -67,6 +71,11 @@ export default new Vuex.Store ({
           context.dispatch('displayMessage', { type: 'error', text: "Erreur d'authentification" })
         }
       }, loginDatas)
+    },
+    loadTypesEtapes (context) {
+      context.state.server.call (C.TYPES_ETAPES, function (data) {
+        context.commit('setTypesEtapes', data[C.TYPES_ETAPES])
+      })
     }
   }
 })

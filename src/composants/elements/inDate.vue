@@ -7,7 +7,8 @@
            @blur="onBlur"
            maxlength="10"
     >
-    <a href="#" @click.prevent="startEdit">{{ displayedValue }}</a>
+    <a href="#" @click.prevent="startEdit" v-show="editable">{{ displayedValue }}</a>
+    <span v-show="!editable">{{ displayedValue }}</span>
   </div>
 </template>
 
@@ -25,7 +26,8 @@ export default {
     }
   },
   props: {
-    value: Object
+    value: Object,
+    editable: Boolean
   },
   computed: {
     displayedValue () { return this.value.format("D MMM YY") }

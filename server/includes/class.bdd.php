@@ -32,6 +32,43 @@ class Bdd {
 		);
 	}
 
+	public function listeProjets () {
+		$projets = $this->arrayFromRequete("SELECT p2.num_projet, p2.nom, p2.chefProjet, p2.budgetPrev
+			FROM projet p1, projet p2
+			WHERE p1.num_projet <> 0 
+				AND p1.num_projetInitial = -1
+				AND (p2.num_projetInitial = p1.num_projet 
+						OR (p2.num_projetInitial = -1 AND p2.num_projet = p1.num_projet)
+					)
+				AND p2.`version` = (
+					SELECT MAX(`version`) 
+					FROM projet p3
+					WHERE p3.num_projetInitial = p1.num_projet OR (p3.num_projetInitial = -1 AND p3.num_projet = p1.num_projet)
+			)");
+
+		foreach ($projets as $projet) {
+			$num_projetLies = $this->num_projetLies($projet->num_projet);
+
+			$projet->fin = $this->varFromRequete(
+				"SELECT MAX(date_add(debut, INTERVAL duree MONTH)) 
+				FROM etape
+				WHERE etape.num_projet IN (".implode(",", $num_projetLies).")"
+			);
+
+			$projet->finPrev = $this->varFromRequete(
+				"SELECT MAX(date_add(debutInitial, INTERVAL dureeInitial MONTH)) 
+				FROM etape
+				WHERE etape.num_projet IN (".implode(",", $num_projetLies).")"
+			);
+		}
+
+		return $projets;
+	}
+
+	public function typesEtapes() {
+		return $this->arrayFromRequete("SELECT * FROM typeEtape");
+	}
+
 	public function sauveProjet($_projet, $_num_projet) {
 		if ($_num_projet) {
 			if (intval($_num_projet) != 0) {
@@ -54,19 +91,58 @@ class Bdd {
 
 	public function sauveEtapes($_etapes, $_num_projet) {
 		$retour = [];
+		$nums_etape = [];
+
+		$retour[] = $_num_projet;
+	
 		foreach($_etapes as $etape) {
-			
-			if (isset($etape['num_etape'])) {
-				$retour[] = "ici";
-				$this->updateFromObject($etape, "etape", "num_etape", $etape->num_etape);
+			if (isset($etape['new'])) {
+				unset($etape['new']);
+			}
+			if (isset($etape['transactions'])) {
+				$transactions = $etape['transactions'];
+				unset($etape['transactions']);
 			} else {
+				$transactions = array();
+			}
+
+			if (isset($etape['num_etape'])) {
+				$num_etape = $etape['num_etape'];
+				if ($this->isFirstVersion($_num_projet)) {
+					$etape['dureeInitial'] = $etape['duree'];
+					$etape['debutInitial'] = $etape['debut'];
+				} else {
+					if (isset($etape['dureeInitial'])) { unset($etape['dureeInitial']); }
+					if (isset($etape['debutInitial'])) { unset($etape['debutInitial']); }
+				}
+				$this->updateFromObject($etape, "etape", "num_etape", $etape['num_etape']);
+				$nums_etape[] = $etape['num_etape'];
+			} else {
+				$retour[] = $etape;
 				$etape['num_projet'] = $_num_projet;
-				$etape['dureeInitial'] = $etape->duree;
-				$etape['debutInitial'] = $etape->debut;
-				$this->insertObject($etape, "etape");
+				$etape['dureeInitial'] = $etape['duree'];
+				$etape['debutInitial'] = $etape['debut'];
+				if (!isset($etape['commentaires'])) { $etape['commentaires'] = ""; }
+				if (!isset($etape['objectifs'])) { $etape['objectifs'] = ""; }
+				$num_etape = $this->insertObject($etape, "etape");
+			}
+			foreach($transactions as $transaction) {
+				$this->sauveTransaction($transaction, $num_etape);
 			}
 		}
+
+		$this->execRequete("UPDATE etape SET supprime = 1 WHERE num_etape NOT IN (".implode(",", $nums_etape).") AND num_projet = ".$_num_projet);
+
 		return $retour;
+	}
+
+	public function sauveTransaction($_transaction, $_num_etape) {
+		if (isset($_transaction['num_transaction'])) {
+			$this->updateFromObject($_transaction, "transaction", "num_transaction", $_transaction['num_transaction']);
+		} else {
+			$_transaction['num_etape'] = $_num_etape;
+			$this->insertObject($_transaction, "transaction");
+		}
 	}
 
 	public function chargeProjet($_num_projet) {
@@ -90,10 +166,17 @@ class Bdd {
 		$num_projetInitial = $this->num_projetInitial($_num_projet);
 		$num_projetInitial = $num_projetInitial == -1 ? $_num_projet : $num_projetInitial;
 		//return $num_projetInitial;
-		return $this->arrayFromRequete(
-			"SELECT * FROM etape WHERE num_projet IN ( SELECT num_projet FROM projet WHERE num_projetInitial = :num_projetInitial OR num_projet = :num_projetInitial)",
+		$etapes = $this->arrayFromRequete(
+			"SELECT * FROM etape WHERE num_projet IN ( SELECT num_projet FROM projet WHERE num_projetInitial = :num_projetInitial OR num_projet = :num_projetInitial) AND NOT supprime",
 			array (":num_projetInitial" => $num_projetInitial)
 		);
+		foreach ($etapes as $etape) {
+			$etape->transactions = $this->arrayFromRequete(
+				"SELECT * FROM `transaction` WHERE num_etape = :num_etape",
+				array(":num_etape" => $etape->num_etape)
+			);
+		}
+		return $etapes;
 	}
 
 	public function isLastVersion($_num_projet) {
@@ -122,6 +205,13 @@ class Bdd {
 		}
 	}
 
+	public function isFirstVersion($_num_projet) {
+		return intval($this->varFromRequete(
+			"SELECT num_projetInitial FROM projet WHERE num_projet = :num_projet",
+			array ( ':num_projet' => $_num_projet )
+		)) == -1;
+	}
+
 	public function valideProjet($_num_projet) {
 		return $this->execRequete(
 			"UPDATE projet SET brouillon = 0 WHERE num_projet = :num_projet",
@@ -136,7 +226,10 @@ class Bdd {
 		);
 		unset($projetActuel->num_projet);
 		$projetActuel->brouillon = 1;
-		$projetActuel->num_projetInitial = $_num_projet;
+		$projetActuel->num_projetInitial = $this->varFromRequete(
+			"SELECT IF(num_projetInitial = -1, num_projet, num_projetInitial) AS num_projetInitial FROM projet WHERE num_projet = :num_projet",
+			array ( ':num_projet' => $_num_projet )
+		);
 
 		$num_projet = $this->insertObject($projetActuel, "projet");
 
@@ -155,6 +248,24 @@ class Bdd {
 		));
 	}
 
+	private function num_projetLies ($_num_projet) {
+		$num_projetInitial = $this->num_projetInitial ($_num_projet);
+		if ($num_projetInitial == -1) {
+			$retour = $this->simpleArrayFromRequete(
+				"SELECT num_projet FROM projet WHERE num_projetInitial = :num_projet",
+				array(':num_projet' => $_num_projet)
+			);
+			$retour[] = $_num_projet;
+		} else {
+			$retour = $this->simpleArrayFromRequete(
+				"SELECT num_projet FROM projet WHERE num_projetInitial = :num_projetInitial",
+				array(':num_projetInitial' => $num_projetInitial)
+			);
+			$retour[] = $num_projetInitial;
+		}
+		return $retour;
+	}
+
 	private function updateFromObject($_objet, $_table, $_champIndex, $_valIndex) {
 		$liste_affectations = array();
 		$liste_champs_prefixe = array();
@@ -166,15 +277,14 @@ class Bdd {
 				$liste_valeurs[":".$key] = $value;
 			}
 		}
-
-		return $_valIndex;
-
 		//return "UPDATE `".$_table."` SET ".implode(", ", $liste_affectations)." WHERE `".$_champIndex."` = ".$_valIndex;
 
 		$this->execRequete(
 			"UPDATE `".$_table."` SET ".implode(", ", $liste_affectations)." WHERE `".$_champIndex."` = ".$_valIndex,
 			$liste_valeurs
 		);
+
+		return $_valIndex;
 	}
 
 	private function insertObject($_objet, $_table) {

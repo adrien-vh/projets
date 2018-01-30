@@ -3,19 +3,19 @@
     <nav>
       <!-- MENU -->
       <ul>
-        <li><a href="#" :class="{ active: activePart == 'fiche' }" @click.prevent="goTo('fiche')">Fiche projet</a></li>
-        <li><a href="#" :class="{ active: activePart == 'analyse' }" @click.prevent="goTo('analyse')">Présentation détaillée du projet</a></li>
-        <li><a href="#" :class="{ active: activePart == 'phases' }" @click.prevent="goTo('phases')">Phases</a></li>
-        <li><a href="#" :class="{ active: activePart == 'fiches' }" @click.prevent="goTo('fiches')">Fiches étape</a></li>
+        <li><a href="#" :class="{ active: activePart == 'fiche' }" @click.prevent="goTo('fiche')">Présentation</a></li>
+        <li><a href="#" :class="{ active: activePart == 'analyse' }" @click.prevent="goTo('analyse')">Présentation détaillée</a></li>
+        <li><a href="#" :class="{ active: activePart == 'phases' }" @click.prevent="goTo('phases')">Calendrier</a></li>
+        <li><a href="#" :class="{ active: activePart == 'fiches' }" @click.prevent="goTo('fiches')">Fiche étape</a></li>
       </ul>
       <!--fin MENU -->
 
       <!-- METAS -->
-      <span class="fs-12 serif"><b>N° de version : {{ projet.version }}</b></span> <br>
+      <span class="fs-12 serif">N° de version : <b>{{ projet.version }}</b></span> <br>
       <span v-show="projet.brouillon == '1'" class="fs-12 serif">(version provisoire)<br></span>
       <span v-show="!isLastVersion" class="fs-12 serif txt-red">version obsolète !</span>
 
-      <button class="btn btn-primary btn-sm" @click="sauveProjet" v-show="editing">
+      <button class="btn btn-primary btn-sm" @click="sauveProjet(false)" v-show="editing">
         <i class="fa fa-floppy-o" aria-hidden="true"></i> Enregistrer
       </button>
 
@@ -23,13 +23,14 @@
         <i class="fa fa-pencil" aria-hidden="true"></i> Éditer
       </button>
 
-      <button class="btn btn-primary btn-sm" @click="newVersion()"  v-show="projet.brouillon == '0'">
+      <button class="btn btn-primary btn-sm" @click="newVersion()"  v-show="projet.brouillon == '0' && isLastVersion">
         <i class="fa fa-star" aria-hidden="true"></i> Nouvelle version
       </button>
 
       <button class="btn btn-primary btn-sm" v-show="projet.brouillon == '1'" @click="valideProjet">
         <i class="fa fa-check" aria-hidden="true"></i> Valider la fiche
       </button><br>
+      <!--{{ etapes.length }}-->
       <!--fin METAS-->
     </nav>
     <div class="contenu">
@@ -48,11 +49,11 @@
       <formPresentationD :projet="projet" :instances="instances" :editable="editing" :numProjet="num_projet"></formPresentationD>      
       
       <h5 id="phases" class="part">Calendrier du projet :</h5>
-      <formCalendrier :projet="projet" :etapes="etapes" :editable="editing"></formCalendrier>
+      <formCalendrier :numProjet="num_projet" :etapes="etapes" :editable="editing" @select="selectEtape($event)"></formCalendrier>
       
 
       <h5 id="fiches" class="part">Fiche étape :</h5>
-      <ficheEtape :projet="projet" :etape="etapeCourante" :editable="editing"></ficheEtape>
+      <ficheEtape :projet="projet" :etape="etapeCourante" :editable="editing" v-if="etapeCourante != null"></ficheEtape>
 
     </div>
     
@@ -86,30 +87,28 @@
       }
     },
     data () {
-      var newStep = { debut: moment("01" + moment().add(1, "month").format("MMYY"), "DDMMYY"), duree: moment.duration(1, "months") }
       return {
-        updateGantt: true,
         editing: true,
         activePart: "fiche",
         projet: { },
-        newStep: newStep,
         isLastVersion: true,
         instances: [],
-        etapes: [],
-        etapeCourante: newStep
+        etapeCourante: null,
+        etapes: []
       }
     },
     computed: { },
     methods: {
-      updateGanttDiagram () { this.updateGantt = !this.updateGantt },
-      
       formatDuration (duration) { return duration.asMonths() + " mois" },
-      
       goTo (id) {
         this.activePart = id;
         $('html, body').animate({
             scrollTop: $('#' + id).offset().top - 50
         }, 200);
+      },
+      selectEtape (etape) {
+        this.etapeCourante = etape
+        this.goTo('fiches')
       },
       newVersion () {
         console.log(this.projet.brouillon)
@@ -121,29 +120,37 @@
           
       },
       formattedSteps () {
-        var retour = [], tmp
+        var retour = [], tmp, i
         for (let etape of this.etapes) {
-          delete etape.transactions
           tmp = $.extend({}, etape)
           tmp.debut = tmp.debut.format("YYYY-MM-DD")
-          tmp.debutInitial = tmp.debutInitial.format("YYYY-MM-DD")
+          if (tmp.debutInitial) {
+            tmp.debutInitial = tmp.debutInitial.format("YYYY-MM-DD")
+          }
           tmp.duree = tmp.duree.asMonths()
-          tmp.dureeInitial = tmp.dureeInitial ? "1" : tmp.dureeInitial.asMonths()
+          if (tmp.dureeInitial) {
+            tmp.dureeInitial = tmp.dureeInitial ? "1" : tmp.dureeInitial.asMonths()
+          }
+          if (tmp.transactions) {
+            
+            for (i = 0; i < tmp.transactions.length; i += 1) {
+              console.log(tmp.transactions[i])
+              tmp.transactions[i].date = tmp.transactions[i].date.format("YYYY-MM-DD")
+            }
+          }
           retour.push(tmp)
         }
         return retour
       },
-      sauveProjet () {
+      sauveProjet (validate) {
         var donnees = {}, me = this
         donnees[C.PROJET] = this.projet
         donnees[C.ETAPES] = this.formattedSteps()
         donnees[C.NUM_PROJET] = this.num_projet
-        donnees[C.INSTANCES] = this.instances
-        
-        console.log(donnees)
+        donnees[C.INSTANCES] = []
+        donnees[C.VALIDE_PROJET] = validate ? '1' : '0'
 
         this.$store.state.server.call (C.SAUVE_PROJET, function (data) {
-          console.log(data)
           me.editing = false
           if (parseFloat(me.num_projet) === 0) {
             me.$router.push("/projet/" + data[C.NUM_PROJET])
@@ -153,7 +160,7 @@
         }, donnees )
       },
       chargeProjet () {
-        var donnees = {}, me = this
+        var donnees = {}, me = this, i
         donnees[C.NUM_PROJET] = this.num_projet
         this.$store.state.server.call (C.CHARGE_PROJET, function (data) {
           
@@ -165,26 +172,27 @@
           me.instances = data[C.INSTANCES]
 
           for (let etape of data[C.ETAPES]) {
+            
             etape['debut'] = moment(etape['debut'], "YYYY-MM-DD")
             etape['debutInitial'] = moment(etape['debutInitial'], "YYYY-MM-DD")
             etape['duree'] = moment.duration(parseFloat(etape['duree']), "months")
             etape['dureeInitial'] = moment.duration(parseFloat(etape['dureeInitial']), "months")
+            
+            
+            for (i = 0; i < etape['transactions'].length; i += 1) {
+              etape['transactions'][i]['date'] = moment(etape['transactions'][i]['date'], "YYYY-MM-DD")
+              etape['transactions'][i]['montant'] = parseFloat(etape['transactions'][i]['montant'])
+            }
           }
 
           me.etapes = data[C.ETAPES]
           if (me.etapes.length > 0) {
             me.etapeCourante = me.etapes[0]
           }
-          me.updateGanttDiagram()
         }, donnees )
       },
       valideProjet () {
-        var donnees = {}, me = this
-        donnees[C.NUM_PROJET] = this.num_projet
-        this.$store.state.server.call (C.VALIDE_PROJET, function (data) {
-          me.editing = false
-          me.projet.brouillon = '0'
-        }, donnees)
+        this.sauveProjet(true)
       },
       onScroll () {
         var scrollPosition = (document.documentElement.scrollTop || document.body.scrollTop) + 100, 
