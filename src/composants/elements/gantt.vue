@@ -150,8 +150,6 @@
           }
         }
 
-      console.log(this.cellWidth)
-
         return {
           top : ((this.cellWidth < 25 ? 0 : 30) + (this.cellWidth < 40 ? 30 : 0) + 6 + (30 * m)) + 'px',
           left : (this.steps[m].debut.diff(this.ganttStartDate, 'months') * this.cellWidth) + 'px',

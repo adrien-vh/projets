@@ -2,6 +2,17 @@
   <div id="projet">
     <nav>
       <!-- MENU -->
+      <span v-show="!isLastVersion" class="fs-14 txt-white w100 txt-center ib bg-red pt20 pb20 br10 mb10">
+        <i class="fa fa-exclamation-triangle fa-2x" aria-hidden="true"></i><br>
+        Version obsolète !
+      </span>
+      
+      <span class="txt-center w100 ib" v-show="isLastVersion">
+        <img v-if="delta < 2" src="../../assets/images/sun_116.png">
+        <img v-else-if="delta < 3" src="../../assets/images/cloud_116.png">
+        <img v-else-if="delta < 6" src="../../assets/images/rain_116.png">
+        <img v-else src="../../assets/images/storm_116.png">
+      </span>
       <ul>
         <li><a href="#" :class="{ active: activePart == 'fiche' }" @click.prevent="goTo('fiche')">Présentation</a></li>
         <li><a href="#" :class="{ active: activePart == 'analyse' }" @click.prevent="goTo('analyse')">Présentation détaillée</a></li>
@@ -11,25 +22,33 @@
       <!--fin MENU -->
 
       <!-- METAS -->
-      <span class="fs-12 serif">N° de version : <b>{{ projet.version }}</b></span> <br>
-      <span v-show="projet.brouillon == '1'" class="fs-12 serif">(version provisoire)<br></span>
-      <span v-show="!isLastVersion" class="fs-12 serif txt-red">version obsolète !</span>
+      <span class="fs-12 txt-center w100 ib">
+        <router-link :to="'/projet/' + num_projetPrec" id="menuLogo" v-if="num_projetPrec"><i class="fa fa-chevron-left fa-lg" aria-hidden="true"></i></router-link>&nbsp;
+        v. <span class="fs-18">{{ projet.version }}</span>
+        &nbsp;<router-link :to="'/projet/' + num_projetSuiv" id="menuLogo" v-if="num_projetSuiv"><i class="fa fa-chevron-right fa-lg" aria-hidden="true"></i></router-link>
+      </span> <br>
+      <span v-show="projet.brouillon == '1'" class="fs-12 txt-grey w100 txt-center ib">(version provisoire)<br></span>
+      <span v-show="!isLastVersion" class="fs-12 txt-red w100 txt-center ib">Version obsolète !</span>
 
-      <button class="btn btn-primary btn-sm" @click="sauveProjet(false)" v-show="editing">
-        <i class="fa fa-floppy-o" aria-hidden="true"></i> Enregistrer
-      </button>
+      <div class="txt-center mt20">
 
-      <button class="btn btn-primary btn-sm" @click="editing = true" v-show="!editing && projet.brouillon == '1'">
-        <i class="fa fa-pencil" aria-hidden="true"></i> Éditer
-      </button>
+        <a href="#" class="round-button blue" @click.prevent="sauveProjet(false)" v-show="editing">
+          <i class="fa fa-floppy-o" aria-hidden="true"></i> Enregistrer
+        </a>
 
-      <button class="btn btn-primary btn-sm" @click="newVersion()"  v-show="projet.brouillon == '0' && isLastVersion">
-        <i class="fa fa-star" aria-hidden="true"></i> Nouvelle version
-      </button>
+        <a href="#" class="round-button blue" @click.prevent="editing = true" v-show="!editing && projet.brouillon == '1'">
+          <i class="fa fa-pencil" aria-hidden="true"></i> Éditer
+        </a>
 
-      <button class="btn btn-primary btn-sm" v-show="projet.brouillon == '1'" @click="valideProjet">
-        <i class="fa fa-check" aria-hidden="true"></i> Valider la fiche
-      </button><br>
+        <a href="#" class="round-button blue" @click.prevent="newVersion()"  v-show="projet.brouillon == '0' && isLastVersion">
+          <i class="fa fa-star" aria-hidden="true"></i> Nouvelle version
+        </a>
+
+        <a href="#" class="round-button green" v-show="projet.brouillon == '1'" @click.prevent="valideProjet">
+          <i class="fa fa-check" aria-hidden="true"></i> Valider
+        </a>
+        
+      </div>
       <!--{{ etapes.length }}-->
       <!--fin METAS-->
     </nav>
@@ -49,14 +68,11 @@
       <formPresentationD :projet="projet" :instances="instances" :editable="editing" :numProjet="num_projet"></formPresentationD>      
       
       <h5 id="phases" class="part">Calendrier du projet :</h5>
-      <formCalendrier :numProjet="num_projet" :etapes="etapes" :editable="editing" @select="selectEtape($event)"></formCalendrier>
+      <formCalendrier :numProjet="num_projet" :etapes="etapes" :editable="editing" @select="selectEtape($event)" @update="setDelta($event)"></formCalendrier>
       
-
       <h5 id="fiches" class="part">Fiche étape :</h5>
       <ficheEtape :projet="projet" :etape="etapeCourante" :editable="editing" v-if="etapeCourante != null"></ficheEtape>
-
     </div>
-    
   </div>
 </template>
 
@@ -94,14 +110,19 @@
         isLastVersion: true,
         instances: [],
         etapeCourante: null,
-        etapes: []
+        etapes: [], 
+        num_projetPrec: null,
+        num_projetSuiv: null,
+        delta: -1
       }
     },
     computed: { },
     methods: {
       formatDuration (duration) { return duration.asMonths() + " mois" },
+      setDelta (delta) {
+        this.delta = delta
+      },
       goTo (id) {
-        this.activePart = id;
         $('html, body').animate({
             scrollTop: $('#' + id).offset().top - 50
         }, 200);
@@ -147,7 +168,7 @@
         donnees[C.PROJET] = this.projet
         donnees[C.ETAPES] = this.formattedSteps()
         donnees[C.NUM_PROJET] = this.num_projet
-        donnees[C.INSTANCES] = []
+        donnees[C.INSTANCES] = this.instances
         donnees[C.VALIDE_PROJET] = validate ? '1' : '0'
 
         this.$store.state.server.call (C.SAUVE_PROJET, function (data) {
@@ -170,6 +191,8 @@
           me.projet = data[C.PROJET]
           me.isLastVersion = data[C.IS_LAST_VERSION]
           me.instances = data[C.INSTANCES]
+          me.num_projetPrec = data[C.PRECEDENT]
+          me.num_projetSuiv = data[C.SUIVANT]
 
           for (let etape of data[C.ETAPES]) {
             
@@ -195,7 +218,7 @@
         this.sauveProjet(true)
       },
       onScroll () {
-        var scrollPosition = (document.documentElement.scrollTop || document.body.scrollTop) + 100, 
+        var scrollPosition = (document.documentElement.scrollTop || document.body.scrollTop) + 200, 
             parts = document.querySelectorAll(".part")
         
         for (let part of parts) {
@@ -235,7 +258,7 @@
     }
 
     h5 {
-      background-color: $CB97;
+      background-color: $CN5;
       color: #fff;
       margin-top: 25px;
       padding: 2px 5px;
@@ -244,24 +267,37 @@
     
     nav {
       position: fixed;
-      top: 80px;
-      width: 200px;
+      top: 40px;
+      width: 180px;
       margin-left: 0;
+      padding: 10px;
+      /*text-align: center;*/
+      /*background-color: $CW00;*/
       ul {
         list-style-type: none;
         margin-left: 0;
         padding-left: 0;
         li {
+          width: 100%;
           a {
-            padding: 0 20px 0 0;
+            width: 100%;
+            padding: 10px;
             margin: 0;
             font-size: 13px;
             font-family: ibm-plex-serif;
             outline: none;
+            display: inline-block;
+            border-top: 1px solid $CW1;
+            color: $CN5;
+            transition: all .2s ease-in-out;
             
-            &.active {
-              text-decoration: underline;
-              font-weight: bold;
+            &.active {           
+              background-color: $CN5;
+              color: #fff;
+            }
+
+            &:hover {
+              text-decoration: none;
             }
           }
         }

@@ -1,20 +1,21 @@
 <template>
   <div>
-      <span class="fs-12">Fin initialement prévue : </span>
-      <b>{{ $formatDate(initialEndDate) }}</b>
-      <span class="fs-12 ml20 ib">Réelle : </span>
-      <b>{{ $formatDate(realEndDate) }}</b>
       <span class="fs-12 ml20 ib">Retard : </span>
       <b>{{ delta }} mois</b>
       <img v-if="delta < 2" src="../../assets/images/sun.png">
       <img v-else-if="delta < 3" src="../../assets/images/cloud.png">
       <img v-else-if="delta < 6" src="../../assets/images/rain.png">
       <img v-else src="../../assets/images/storm.png">
+      <span class="fs-12">
+        ( <b>{{ $formatDate(initialEndDate) }}</b>
+        <i class="fa fa-arrow-right" aria-hidden="true"></i>
+        <b>{{ $formatDate(realEndDate) }}</b>)
+      </span>
       <table class="table table-hover table-sm table-striped infos">
         <thead class="">
           <tr>
             <th class="w20p"></th>
-            <th class="w400p">Étape</th>
+            <th class="w350p">Étape</th>
             <!--<th>Commentaires</th>-->
             <th>Début</th>
             <th>Fin</th>
@@ -29,7 +30,7 @@
             <td><inText v-model="etapes[m-1].nom" :editable="editable"></inText></td>
             <!--<td>{{ etapes[m-1].description }}</td>-->
             <td><inMonth v-model="etapes[m-1].debut" :editable="editable" @input="updateGanttDiag"></inMonth></td>
-            <td>{{ $formatDate(endDate(etapes[m-1])) }}</td>
+            <td v-html="$formatDate(endDate(etapes[m-1]))"></td>
             <td><inDuration v-model="etapes[m-1].duree" :editable="editable" @input="updateGanttDiag"></inDuration></td>
             <td><inTypeEtape v-model="etapes[m-1].num_typeEtape" :editable="editable"></inTypeEtape></td>
             <td v-show="editable">
@@ -99,7 +100,9 @@
             return moment(momentEnd).add(1, 'months')
           },
           delta () {
-            return this.realEndDate.diff(this.initialEndDate, 'months')
+            var delta = this.realEndDate.diff(this.initialEndDate, 'months')
+            this.$emit("update", delta)
+            return delta
           }
         },
         methods: {

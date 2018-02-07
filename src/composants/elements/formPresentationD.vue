@@ -20,6 +20,7 @@
             <th>Étapes / instance</th>
             <th>Dates</th>
             <th>Commentaires</th>
+            <th>Fichiers</th>
             <th v-show="editable"></th>
           </tr>
         </thead>
@@ -34,6 +35,10 @@
             <td>
               <inText v-model="instance.commentaires" :editable="editable && instance.num_projet == numProjet"></inText>
             </td>
+            <td>
+              <span v-for="fichier in instance.fichiers">{{ fichier.nom }}<br></span>
+              <in-file @add="ajoutFichierInstance($event, instance)"></in-file>
+            </td>
             <td v-show="editable"><button v-show="instance.num_projet == numProjet" class="btn btn-danger btn-sm pointer mb10">Supprimer</button></td>
           </tr>
           <tr v-show="editable">
@@ -45,6 +50,10 @@
             </td>
             <td>
               <inText v-model="newInstance.commentaires" :editable="true"></inText>
+            </td>
+            <td>
+              <span v-for="fichier in newInstance.fichiers" :key="fichier.num_fichier">{{ fichier.nom }}<br></span>
+              <in-file @add="ajoutFichierInstance($event, newInstance)"></in-file>
             </td>
             <td class="txt-center">
               <button class="btn btn-primary btn-sm pointer mb10" @click="sauveInstance">Valider</button>
@@ -59,12 +68,13 @@
 import inLongText from "../elements/inLongText";
 import inNumber from "../elements/inNumber";
 import inText from "../elements/inText";
+import inFile from "../elements/inFile";
 
 export default {
-  components: { inLongText, inNumber, inText },
+  components: { inLongText, inNumber, inText, inFile },
   data () {
     return {
-      newInstance : { nom: "", dates: "", commentaires: "" }
+      newInstance : { nom: "", dates: "", commentaires: "", fichiers: [] }
     }
   },
   props: {
@@ -77,6 +87,14 @@ export default {
     sauveInstance () {
       this.instances.push($.extend({}, this.newInstance))
       this.newInstance = { nom: "", dates: "", commentaires: "" }
+    },
+    ajoutFichierInstance (fichier, instance) {
+      console.log(instance)
+      if (typeof instance.fichiers === 'undefined') {
+        instance.fichiers = []
+      }
+      instance.fichiers.push(fichier)
+      console.log(fichier)
     }
   }
 };

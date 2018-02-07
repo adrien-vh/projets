@@ -13,13 +13,13 @@
       <tbody>
         <tr v-for="transaction in transactionsFiltrees">
           <td><inText v-model="transaction.intitule" :editable="editable"></inText></td>
-          <td><inDate v-model="transaction.date" :editable="editable"></inDate></td>
+          <td><inMonth v-model="transaction.date" :editable="editable"></inMonth></td>
           <td><inNumber v-model="transaction.montant" :editable="editable" :maxLength="5" suffix="k€"></inNumber></td>
           <td v-show="editable"><button class="btn btn-danger btn-sm pointer mb10">Supprimer</button></td>
         </tr>
         <tr v-show="editable">
           <td><inText v-model="newTransaction.intitule" :editable="true"></inText></td>
-          <td><inDate v-model="newTransaction.date" :editable="true"></inDate></td>
+          <td><inMonth v-model="newTransaction.date" :editable="true"></inMonth></td>
           <td><inNumber v-model="newTransaction.montant" :maxLength="5" suffix="k€" :editable="true"></inNumber></td>
           <td class="txt-center">
             <button class="btn btn-primary btn-sm pointer mb10" @click="sauveTransaction">Valider</button>
@@ -41,9 +41,10 @@
 import inText from "../elements/inText";
 import inNumber from "../elements/inNumber";
 import inDate from "../elements/inDate";
+import inMonth from "../elements/inMonth";
 
 export default {
-  components: { inText, inNumber, inDate },
+  components: { inText, inNumber, inDate, inMonth },
   data () {
     return {
       newTransaction : { intitule: "", date: moment(), montant: 0 }

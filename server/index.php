@@ -1,10 +1,28 @@
 <?php
 session_start();
 
-header('Access-Control-Allow-Origin:  '.$_SERVER['HTTP_ORIGIN']);
-header('Access-Control-Allow-Methods: GET, POST'); 
-header('Access-Control-Allow-Credentials: true');
+if (isset($_SERVER['HTTP_ORIGIN'])) {
+	header('Access-Control-Allow-Origin:  '.$_SERVER['HTTP_ORIGIN']);
+	header('Access-Control-Allow-Methods: GET, POST'); 
+	header('Access-Control-Allow-Credentials: true');
+}
 header('Content-Type: application/json');
+
+if (isset($_SERVER['REQUEST_METHOD'])) {
+
+	if ($_SERVER['REQUEST_METHOD'] == 'OPTIONS') {
+
+			if (isset($_SERVER['HTTP_ACCESS_CONTROL_REQUEST_METHOD'])) {
+					header('Access-Control-Allow-Methods: GET, POST, OPTIONS');
+			}
+
+			if (isset($_SERVER['HTTP_ACCESS_CONTROL_REQUEST_HEADERS'])) {
+					header("Access-Control-Allow-Headers: {$_SERVER['HTTP_ACCESS_CONTROL_REQUEST_HEADERS']}");
+			}
+
+			exit;
+	}
+}
 
 require_once('includes/globals.inc.php');
 require_once('includes/class.bdd.php');
@@ -59,6 +77,8 @@ switch ($action) {
 		$retour[INSTANCES] = $bdd->chargeInstances($_POST[NUM_PROJET]);
 		$retour[ETAPES] = $bdd->chargeEtapes($_POST[NUM_PROJET]);
 		$retour[IS_LAST_VERSION] = $bdd->isLastVersion($_POST[NUM_PROJET]);
+		$retour[PRECEDENT] = $bdd->num_projetPrecedent($_POST[NUM_PROJET]);
+		$retour[SUIVANT] = $bdd->num_projetSuivant($_POST[NUM_PROJET]);
 		break;
 
 	case CREER_VERSION :
@@ -67,6 +87,32 @@ switch ($action) {
 	
 	case TYPES_ETAPES :
 		$retour[TYPES_ETAPES] = $bdd->typesEtapes();
+		break;
+
+	case UPLOAD :
+		require('includes/Uploader.php');
+		require('includes/fansi.inc.php');
+
+		$upload_dir 					= FILES_FOLDER.'/';
+		$Upload 							= new FileUpload(FICHIER_UPLOAD);
+
+		$realName							= $Upload->getFileName();
+		$ext 									= $Upload->getExtension();
+
+		$Upload->newFileName 	= nomFichier($upload_dir, $realName);
+		$result 							= $Upload->handleUpload($upload_dir);
+		
+		$retour[NUM_FICHIER] 	= $bdd->sauveFichier($realName, $Upload->getFileName(), $ext);
+		$retour[NOM_FICHIER] 	= $realName;
+		$retour[EXTENSION] 		= $ext;
+
+	/*	if (!$result) {
+			$retour['success'] = false;
+			$retour['msg'] = $Upload->getErrorMsg();  
+		} else {
+			$retour['success'] = true;
+			$retour['file'] = $Upload->getFileName();
+		}*/
 		break;
 }
 

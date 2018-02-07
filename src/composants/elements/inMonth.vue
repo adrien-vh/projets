@@ -1,6 +1,9 @@
 <template>
   <div>
-      <a href="#" @click.prevent="monthChoserOpen = true" v-show="editable">{{ currentValueMonth }} {{ currentValueYear }}</a>
+      <a href="#" @click.prevent="minus" tabindex="-1" v-show="editable"><i class="fa fa-minus-square" aria-hidden="true"></i></a>
+      <a href="#" @click.prevent="monthChoserOpen = true" v-show="editable" class="monthLink">{{ currentValueMonth }} {{ currentValueYear }}</a>
+      <a href="#" @click.prevent="plus" tabindex="-1" v-show="editable"><i class="fa fa-plus-square" aria-hidden="true"></i></a>
+
       <span v-show="!editable">{{ currentValueMonth }} {{ currentValueYear }}</span>
       <div class="monthChoser" v-show="monthChoserOpen">
           <a href="#" @click.prevent="setMonth(1)">jan.</a>
@@ -56,11 +59,27 @@ export default {
         }
   },
   methods: {
-      setMonth (month) {
+      plus () {
+        if (parseFloat(this.currentMonthNumber) === 12) {
+          this.setYear(parseFloat(this.currentValueYear) + 1)
+          this.setMonth(1, false)
+        } else {
+          this.setMonth(parseFloat(this.currentMonthNumber) + 1, false)
+        }
+      },
+      minus () {
+        if (parseFloat(this.currentMonthNumber) === 1) {
+          this.setYear(parseFloat(this.currentValueYear) - 1)
+          this.setMonth(12, false)
+        } else {
+          this.setMonth(parseFloat(this.currentMonthNumber) - 1, false)
+        }
+      },
+      setMonth (month, openYear = true) {
           this.currentMonthNumber = month
           this.currentValueMonth = moment("01 " + month + " 2010", "DD M YYYY").format("MMM")
           this.monthChoserOpen = false
-          this.yearChoserOpen = true
+          this.yearChoserOpen = openYear
           this.emitValue()
       },
       setYear (year) {
@@ -81,10 +100,18 @@ export default {
   div {
     display: inline-block;
     position: relative;
+    width: 85px;
     a {
         width: auto;
         outline: none;
     }
+
+    .monthLink {
+      width: 60px;
+      display: inline-block;
+      text-align: center;
+    }
+
     .monthChoser, .yearChoser {
         width: 120px;
         text-align: center;

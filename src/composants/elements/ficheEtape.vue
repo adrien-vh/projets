@@ -35,6 +35,16 @@
         :editable="editable"
         @create="sauveTransaction($event)"
       ></listeTransactions>
+      
+      <div class="serif fs-13 mt10 bold">Recettes de fonctionnement :</div>
+      <listeTransactions
+        :projet="projet"
+        :transactions="etape.transactions"
+        :recette="'1'"
+        :fonctionnement="'1'"
+        :editable="editable"
+        @create="sauveTransaction($event)"
+      ></listeTransactions>
 
       <div class="serif fs-13 mt10 bold">Dépenses d'investissement :</div>
       <listeTransactions
@@ -42,16 +52,6 @@
         :transactions="etape.transactions"
         :recette="'0'"
         :fonctionnement="'0'"
-        :editable="editable"
-        @create="sauveTransaction($event)"
-      ></listeTransactions>
-
-      <div class="serif fs-13 mt10 bold">Recettes de fonctionnement :</div>
-      <listeTransactions
-        :projet="projet"
-        :transactions="etape.transactions"
-        :recette="'1'"
-        :fonctionnement="'1'"
         :editable="editable"
         @create="sauveTransaction($event)"
       ></listeTransactions>

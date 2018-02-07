@@ -4,7 +4,6 @@
       <li><router-link to="/accueil" id="menuLogo">p<span>ro</span>j<span>ets</span></router-link></li>
       <li><router-link to="/accueil" :class="{ active: $route.name === 'accueil' }">Accueil</router-link></li>
       <li><router-link to="/projet" :class="{ active: $route.name === 'projet' }">Projet</router-link></li>
-      <li><router-link to="/login">Menu 3</router-link></li>
       <li><router-link to="/login">Configuration</router-link></li>
     </ul>
     <div id="connectionInfos">

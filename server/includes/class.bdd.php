@@ -32,18 +32,26 @@ class Bdd {
 		);
 	}
 
+	public function sauveFichier($_nom, $_nomFS, $_ext) {
+		return $this->insertFromRequete(
+			"INSERT INTO fichier (nom, nomFS, ext) VALUES (:nom, :nomFS, :ext)",
+			array(
+				":nom" => $_nom,
+				":nomFS" => $_nomFS,
+				":ext" => $_ext
+			)
+		);
+	}
+
 	public function listeProjets () {
-		$projets = $this->arrayFromRequete("SELECT p2.num_projet, p2.nom, p2.chefProjet, p2.budgetPrev
+		$projets = $this->arrayFromRequete("SELECT p2.num_projet, p2.nom, p2.chefProjet, p2.budgetPrev, p2.brouillon
 			FROM projet p1, projet p2
 			WHERE p1.num_projet <> 0 
-				AND p1.num_projetInitial = -1
-				AND (p2.num_projetInitial = p1.num_projet 
-						OR (p2.num_projetInitial = -1 AND p2.num_projet = p1.num_projet)
-					)
+				AND p2.num_projetInitial = p1.num_projet 
 				AND p2.`version` = (
 					SELECT MAX(`version`) 
 					FROM projet p3
-					WHERE p3.num_projetInitial = p1.num_projet OR (p3.num_projetInitial = -1 AND p3.num_projet = p1.num_projet)
+					WHERE p3.num_projetInitial = p1.num_projet
 			)");
 
 		foreach ($projets as $projet) {
@@ -75,23 +83,45 @@ class Bdd {
 				return $this->updateFromObject($_projet, "projet", "num_projet", $_num_projet);
 			}
 		}
-		return $this->insertObject($_projet, "projet");
+		$num_projet = $this->insertObject($_projet, "projet");
+		if (intval($_projet->num_projetInitial) == 0) {
+			$this->execRequete(
+				"UPDATE projet SET num_projetInitial = num_projet WHERE num_projet = :num_projet",
+				array(":num_projet" => $num_projet)
+			);
+		}
+
+		return $num_projet;
 	}
 
 	public function sauveInstances($_instances, $_num_projet) {
 		foreach($_instances as $instance) {
-			if (isset($instance['num_instance'])) {
-				$this->updateFromObject($instance, "instance", "num_instance", $instance->num_instance);
+			$fichiers = array();
+			if (isset($instance['fichiers'])) {
+				$fichiers = $instance['fichiers'];
+				unset($instance['fichiers']);
+			}
+			if (isset($instance['num_instance'])) {		
+				$this->updateFromObject($instance, "instance", "num_instance", $instance['num_instance']);
 			} else {
 				$instance['num_projet'] = $_num_projet;
-				$this->insertObject($instance, "instance");
+				$instance['num_instance'] = $this->insertObject($instance, "instance");
+			}
+			foreach($fichiers as $fichier) {
+				$this->execRequete(
+					"INSERT IGNORE INTO fichier_instance (num_fichier, num_instance) VALUES (:num_fichier, :num_instance)",
+					array(
+						':num_fichier' => $fichier['num_fichier'],
+						':num_instance' => $instance['num_instance']
+					)
+				);
 			}
 		}
 	}
 
 	public function sauveEtapes($_etapes, $_num_projet) {
 		$retour = [];
-		$nums_etape = [];
+		$nums_etape = array(-1);
 
 		$retour[] = $_num_projet;
 	
@@ -152,14 +182,46 @@ class Bdd {
 		);
 	}
 
+	public function num_projetPrecedent($_num_projet) {
+		$version = $this->varFromRequete("SELECT `version` FROM projet WHERE num_projet = :num_projet", array(':num_projet' => $_num_projet));
+		$num_projetInitial = $this->num_projetInitial($_num_projet);
+		return $this->varFromRequete(
+			"SELECT num_projet FROM projet WHERE num_projetInitial = :num_projetInitial AND `version` = (SELECT MAX(`version`) FROM projet WHERE num_projetInitial = :num_projetInitial AND `version` < :version)",
+			array(
+				":num_projetInitial" => $num_projetInitial,
+				":version" => $version
+			)
+		);
+	}
+
+	public function num_projetSuivant($_num_projet) {
+		$version = $this->varFromRequete("SELECT `version` FROM projet WHERE num_projet = :num_projet", array(':num_projet' => $_num_projet));
+		$num_projetInitial = $this->num_projetInitial($_num_projet);
+		return $this->varFromRequete(
+			"SELECT num_projet FROM projet WHERE `version` = (SELECT MIN(`version`) FROM projet WHERE num_projetInitial = :num_projetInitial AND `version` > :version)",
+			array(
+				":num_projetInitial" => $num_projetInitial,
+				":version" => $version
+			)
+		);
+	}
+
 	public function chargeInstances($_num_projet) {
 		$num_projetInitial = $this->num_projetInitial($_num_projet);
-		$num_projetInitial = $num_projetInitial == -1 ? $_num_projet : $num_projetInitial;
 		//return $num_projetInitial;
-		return $this->arrayFromRequete(
-			"SELECT * FROM instance WHERE num_projet IN ( SELECT num_projet FROM projet WHERE num_projetInitial = :num_projetInitial OR num_projet = :num_projetInitial)",
+		$instances = $this->arrayFromRequete(
+			"SELECT * FROM instance WHERE num_projet IN ( SELECT num_projet FROM projet WHERE num_projetInitial = :num_projetInitial)",
 			array (":num_projetInitial" => $num_projetInitial)
 		);
+
+		foreach($instances as $instance) {
+			$instance->fichiers = $this->arrayFromRequete(
+				"SELECT * FROM fichier WHERE num_fichier IN (SELECT num_fichier FROM fichier_instance WHERE num_instance = :num_instance)",
+				array(":num_instance" => $instance->num_instance)
+			);
+		}
+
+		return $instances;
 	}
 
 	public function chargeEtapes($_num_projet) {
@@ -185,18 +247,10 @@ class Bdd {
 			array (':num_projet' => $_num_projet)
 		));
 
-		if ($this->num_projetInitial($_num_projet) == -1) {
-			$lastVersion = intval($this->varFromRequete(
-				"SELECT MAX(version) FROM projet WHERE num_projetInitial = :num_projetInitial",
-				array ( ':num_projetInitial' => $_num_projet ))
-			);
-
-		} else {
-			$lastVersion = intval($this->varFromRequete(
-				"SELECT MAX(version) FROM projet WHERE num_projetInitial = :num_projetInitial",
-				array ( ':num_projetInitial' => $this->num_projetInitial($_num_projet) ))
-			);
-		}
+		$lastVersion = intval($this->varFromRequete(
+			"SELECT MAX(version) FROM projet WHERE num_projetInitial = :num_projetInitial",
+			array ( ':num_projetInitial' => $this->num_projetInitial($_num_projet) ))
+		);
 
 		if ($lastVersion > $num_version) {
 			return false;
@@ -206,10 +260,21 @@ class Bdd {
 	}
 
 	public function isFirstVersion($_num_projet) {
-		return intval($this->varFromRequete(
-			"SELECT num_projetInitial FROM projet WHERE num_projet = :num_projet",
-			array ( ':num_projet' => $_num_projet )
-		)) == -1;
+		$num_version = intval($this->varFromRequete(
+			"SELECT version FROM projet WHERE num_projet = :num_projet",
+			array (':num_projet' => $_num_projet)
+		));
+
+		$firstVersion = intval($this->varFromRequete(
+			"SELECT MIN(version) FROM projet WHERE num_projetInitial = :num_projetInitial",
+			array ( ':num_projetInitial' => $this->num_projetInitial($_num_projet) ))
+		);
+
+		if ($firstVersion < $num_version) {
+			return false;
+		} else {
+			return true;
+		}
 	}
 
 	public function valideProjet($_num_projet) {
@@ -227,7 +292,7 @@ class Bdd {
 		unset($projetActuel->num_projet);
 		$projetActuel->brouillon = 1;
 		$projetActuel->num_projetInitial = $this->varFromRequete(
-			"SELECT IF(num_projetInitial = -1, num_projet, num_projetInitial) AS num_projetInitial FROM projet WHERE num_projet = :num_projet",
+			"SELECT num_projetInitial FROM projet WHERE num_projet = :num_projet",
 			array ( ':num_projet' => $_num_projet )
 		);
 
@@ -249,21 +314,10 @@ class Bdd {
 	}
 
 	private function num_projetLies ($_num_projet) {
-		$num_projetInitial = $this->num_projetInitial ($_num_projet);
-		if ($num_projetInitial == -1) {
-			$retour = $this->simpleArrayFromRequete(
-				"SELECT num_projet FROM projet WHERE num_projetInitial = :num_projet",
-				array(':num_projet' => $_num_projet)
-			);
-			$retour[] = $_num_projet;
-		} else {
-			$retour = $this->simpleArrayFromRequete(
-				"SELECT num_projet FROM projet WHERE num_projetInitial = :num_projetInitial",
-				array(':num_projetInitial' => $num_projetInitial)
-			);
-			$retour[] = $num_projetInitial;
-		}
-		return $retour;
+		return $this->simpleArrayFromRequete(
+			"SELECT num_projet FROM projet WHERE num_projetInitial = :num_projetInitial",
+			array(':num_projetInitial' => $this->num_projetInitial($_num_projet))
+		);
 	}
 
 	private function updateFromObject($_objet, $_table, $_champIndex, $_valIndex) {

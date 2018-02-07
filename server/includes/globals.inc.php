@@ -1,6 +1,7 @@
 <?php
 	define ('BASE_FOLDER', 			realpath(dirname(__FILE__, 4)));
 	define ('LOGINS_FOLDER', 		BASE_FOLDER.'/logins');
+	define ('FILES_FOLDER', 		BASE_FOLDER.'/html/files');
 	define ('IP_FILE_EXT',			'ip');
 
 	define('ACTION', 					'action');
@@ -8,16 +9,23 @@
 	define('CONSTANTS', 			'constants');
 	define('CREER_VERSION', 	'creerVersion');
 	define('ETAPES', 					'etapes');
+	define('EXTENSION',				'ext');
+	define('FICHIER_UPLOAD',	'uploadfile');
 	define('FULL_NAME', 			'fullName');
 	define('INSTANCES',				'instances');
 	define('IPUSER', 					'ipUser');
 	define('IS_LAST_VERSION', 'isLastVersion');
 	define('LISTE_PROJETS',		'listeProjets');
 	define('LOGIN', 					'login');
+	define('NOM_FICHIER', 		'nom_fichier');
+	define('NUM_FICHIER', 		'num_fichier');
 	define('NUM_PROJET', 			'num_projet');
 	define('PASSWORD', 				'password');
+	define('PRECEDENT', 			'precedent');
 	define('PROJET', 					'projet');
 	define('SAUVE_PROJET', 		'sauveProjet');
+	define('SUIVANT',			 		'suivant');
 	define('TYPES_ETAPES', 		'typesEtapes');
+	define('UPLOAD', 					'upload');
 	define('USER', 						'user');
 	define('VALIDE_PROJET',		'valideProjet');
