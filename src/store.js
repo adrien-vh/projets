@@ -14,6 +14,9 @@ export default new Vuex.Store ({
       fullName: null
     },
     typesEtapes: [],
+    axes: [],
+    sousAxes: [],
+    directions: [],
     server : {
       runningQueries : 0,
       call (action, callback = null, datas = {}) {
@@ -46,6 +49,15 @@ export default new Vuex.Store ({
     },
     setTypesEtapes (state, typesEtapes) {
       state.typesEtapes = typesEtapes
+    },
+    setAxes (state, axes) {
+      state.axes = axes
+    },
+    setSousAxes (state, sousAxes) {
+      state.sousAxes = sousAxes
+    },
+    setDirections (state, directions) {
+      state.directions = directions
     }
   },
   actions: {
@@ -75,6 +87,17 @@ export default new Vuex.Store ({
     loadTypesEtapes (context) {
       context.state.server.call (C.TYPES_ETAPES, function (data) {
         context.commit('setTypesEtapes', data[C.TYPES_ETAPES])
+      })
+    },
+    loadAxes (context) {
+      context.state.server.call (C.AXES, function (data) {
+        context.commit('setAxes', data[C.AXES])
+        context.commit('setSousAxes', data[C.SOUS_AXES])
+      })
+    },
+    loadDirections (context) {
+      context.state.server.call (C.DIRECTIONS, function (data) {
+        context.commit('setDirections', data[C.DIRECTIONS])
       })
     }
   }

@@ -44,7 +44,7 @@ class Bdd {
 	}
 
 	public function listeProjets () {
-		$projets = $this->arrayFromRequete("SELECT p2.num_projet, p2.nom, p2.chefProjet, p2.budgetPrev, p2.brouillon
+		$projets = $this->arrayFromRequete("SELECT p2.num_projet, p2.nom, p2.chefProjet, p2.budgetPrev, p2.brouillon, p2.num_direction, p2.num_axe
 			FROM projet p1, projet p2
 			WHERE p1.num_projet <> 0 
 				AND p2.num_projetInitial = p1.num_projet 
@@ -75,6 +75,22 @@ class Bdd {
 
 	public function typesEtapes() {
 		return $this->arrayFromRequete("SELECT * FROM typeEtape");
+	}
+
+	public function axes() {
+		return $this->arrayFromRequete("SELECT * FROM axe");
+	}
+
+	public function directions() {
+		return $this->arrayFromRequete("SELECT * FROM direction");
+	}
+
+	public function sousAxes() {
+		return $this->arrayFromRequete(
+			"SELECT a.couleur, sa.* 
+			FROM sousAxe sa
+				LEFT JOIN axe a USING (num_axe)"
+		);
 	}
 
 	public function sauveProjet($_projet, $_num_projet) {

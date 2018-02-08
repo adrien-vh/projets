@@ -20,7 +20,7 @@
             <th>Début</th>
             <th>Fin</th>
             <th>Durée</th>
-            <th>Type</th>
+            <th class="w100p">Type</th>
             <th v-show="editable"></th>
           </tr>
         </thead>
@@ -49,7 +49,18 @@
             <td><inMonth v-model="newStep.debut" :editable="editable"></inMonth></td>
             <td>{{ $formatDate(endDate(newStep)) }}</td>
             <td><inDuration v-model="newStep.duree" :editable="editable" :defaultValue="1" :minValue="1"></inDuration></td>
-            <td><inTypeEtape v-model="newStep.num_typeEtape" :editable="editable"></inTypeEtape></td>
+            <td>
+              <inChoixMultiple
+                  v-model="newStep.num_typeEtape"
+                  :listeElements="$store.state.typesEtapes"
+                  :champValeur="'num_typeEtape'"
+                  :champLabel="'intitule'"
+                  :champCouleur="'couleur'"
+                  :editable="editable"
+              ></inChoixMultiple>
+
+              <!--<inTypeEtape v-model="newStep.num_typeEtape" :editable="editable"></inTypeEtape>-->
+            </td>
             <td>
               <button class="btn btn-primary btn-sm pointer mb10" @click="addStep">Valider</button>
             </td>
@@ -66,6 +77,7 @@
     import inText from './inText'
     import inDuration from './inDuration'
     import inTypeEtape from './inTypeEtape'
+    import inChoixMultiple from './inChoixMultiple'
     import gantt from './gantt'
 
     export default {
@@ -75,26 +87,26 @@
             newStep : { debut: moment("01" + moment().add(1, "month").format("MMYY"), "DDMMYY"), duree: moment.duration(1, "months"), transactions: [], num_typeEtape: '1' }
           }
         },
-        components: { inMonth, inDuration, inText, gantt, inTypeEtape },
+        components: { inMonth, inDuration, inText, gantt, inTypeEtape, inChoixMultiple },
         props: { numProjet: { type: String }, etapes: { type: Array }, editable: { type: Boolean, default: false } },
         watch: {
           etapes () { this.updateGantt = !this.updateGantt }
         },
         computed: {
           initialEndDate () {
-            var momentEnd = this.etapes.length > 0 ? this.endDateInitial(this.etapes[0]) : moment()
-            for (let step of this.etapes) {
-              if (this.endDateInitial(step).isAfter(momentEnd)) {
-                momentEnd = this.endDateInitial(step)
+            var momentEnd = this.etapes.length > 0 ? this.endDateInitial(this.etapes[0]) : moment(), i
+            for (i = 0; i < this.etapes.length; i += 1) {
+              if (this.endDateInitial(this.etapes[i]).isAfter(momentEnd)) {
+                momentEnd = this.endDateInitial(this.etapes[i])
               }
             }
             return moment(momentEnd).add(1, 'months')
           },
           realEndDate () {
-            var momentEnd = this.etapes.length > 0 ? this.endDate(this.etapes[0]) : moment()
-            for (let step of this.etapes) {
-              if (this.endDate(step).isAfter(momentEnd)) {
-                momentEnd = this.endDate(step)
+            var momentEnd = this.etapes.length > 0 ? this.endDate(this.etapes[0]) : moment(), i
+            for (i = 0; i < this.etapes.length; i += 1) {
+              if (this.endDate(this.etapes[i]).isAfter(momentEnd)) {
+                momentEnd = this.endDate(this.etapes[i])
               }
             }
             return moment(momentEnd).add(1, 'months')

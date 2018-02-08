@@ -88,6 +88,15 @@ switch ($action) {
 	case TYPES_ETAPES :
 		$retour[TYPES_ETAPES] = $bdd->typesEtapes();
 		break;
+	
+	case AXES:
+		$retour[AXES] = $bdd->axes();
+		$retour[SOUS_AXES] = $bdd->sousAxes();
+		break;
+
+	case DIRECTIONS:
+		$retour[DIRECTIONS] = $bdd->directions();
+		break;
 
 	case UPLOAD :
 		require('includes/Uploader.php');

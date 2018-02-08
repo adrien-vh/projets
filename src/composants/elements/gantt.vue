@@ -61,27 +61,27 @@
     computed: {
       nbMonths () { return this.ganttEndDate.diff(this.ganttStartDate, "months") },
       ganttStartDate () {
-        var momentStart = this.steps.length > 0 ? this.steps[0].debut : moment()
-        for (let step of this.steps) {
-          if (step.debut.isBefore(momentStart)) {
-            momentStart = step.debut
+        var momentStart = this.steps.length > 0 ? this.steps[0].debut : moment(), i
+        for (i = 0; i < this.steps.length; i += 1) {
+          if (this.steps[i].debut.isBefore(momentStart)) {
+            momentStart = this.steps[i].debut
           }
-          if (step.debutInitial.isBefore(momentStart)) {
-            momentStart = step.debutInitial
+          if (this.steps[i].debutInitial.isBefore(momentStart)) {
+            momentStart = this.steps[i].debutInitial
           }
         }
         console.log(momentStart.format())
         return moment(momentStart).subtract(1, 'months')
       },
       ganttEndDate () {
-        var momentEnd = this.steps.length > 0 ? this.endDate(this.steps[0]) : moment()
-        for (let step of this.steps) {
-          if (this.endDate(step).isAfter(momentEnd)) {
-            momentEnd = this.endDate(step)
+        var momentEnd = this.steps.length > 0 ? this.endDate(this.steps[0]) : moment(), i
+        for (i = 0; i < this.steps.length; i += 1) {
+          if (this.endDate(this.steps[i]).isAfter(momentEnd)) {
+            momentEnd = this.endDate(this.steps[i])
           }
       
-          if (this.endDateInitial(step).isAfter(momentEnd)) {
-            momentEnd = this.endDateInitial(step)
+          if (this.endDateInitial(this.steps[i]).isAfter(momentEnd)) {
+            momentEnd = this.endDateInitial(this.steps[i])
           }
         }
         return moment(momentEnd).add(2, 'months')

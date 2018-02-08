@@ -38,8 +38,16 @@ a {
 .w350p { width: 350px; }
 .w400p { width: 400px; }
 
+.h15p { height: 15px; }
+.h30p { height: 30px; }
+.h45p { height: 45px; }
+
 .pt20 { padding-top: 20px; }
 .pb20 { padding-bottom: 20px; }
+.pl10 { padding-left: 10px; }
+.pr10 { padding-right: 10px; }
+.pl15 { padding-left: 15px; }
+.pr15 { padding-right: 15px; }
 .pa10 { padding: 10px; }
 
 .mt10 { margin-top: 10px; }
@@ -50,6 +58,7 @@ a {
 .br10 { border-radius: 10px; }
 
 .ib { display: inline-block; }
+.oh { overflow: hidden; }
 
 .pointer { cursor: pointer; }
 

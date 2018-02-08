@@ -100,7 +100,6 @@ export default {
   div {
     display: inline-block;
     position: relative;
-    width: 85px;
     a {
         width: auto;
         outline: none;

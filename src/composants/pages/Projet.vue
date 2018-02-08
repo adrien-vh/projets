@@ -88,6 +88,7 @@
   import formPresentationD from '../elements/formPresentationD'
   import ficheEtape from '../elements/ficheEtape'
   import formCalendrier from '../elements/formCalendrier'
+  
     
   export default {
     components: { inLongText, gantt, inNumber, inDuration, inText, inDate, inMonth, formPresentation, formPresentationD, ficheEtape, formCalendrier },
@@ -141,9 +142,9 @@
           
       },
       formattedSteps () {
-        var retour = [], tmp, i
-        for (let etape of this.etapes) {
-          tmp = $.extend({}, etape)
+        var retour = [], tmp, i, j
+        for (j=0; j < this.etapes.length; j += 1) {
+          tmp = $.extend({}, this.etapes[j])
           tmp.debut = tmp.debut.format("YYYY-MM-DD")
           if (tmp.debutInitial) {
             tmp.debutInitial = tmp.debutInitial.format("YYYY-MM-DD")
@@ -181,7 +182,7 @@
         }, donnees )
       },
       chargeProjet () {
-        var donnees = {}, me = this, i
+        var donnees = {}, me = this, i, j
         donnees[C.NUM_PROJET] = this.num_projet
         this.$store.state.server.call (C.CHARGE_PROJET, function (data) {
           
@@ -194,17 +195,17 @@
           me.num_projetPrec = data[C.PRECEDENT]
           me.num_projetSuiv = data[C.SUIVANT]
 
-          for (let etape of data[C.ETAPES]) {
+          for (j = 0; j < data[C.ETAPES].length; j += 1) {
             
-            etape['debut'] = moment(etape['debut'], "YYYY-MM-DD")
-            etape['debutInitial'] = moment(etape['debutInitial'], "YYYY-MM-DD")
-            etape['duree'] = moment.duration(parseFloat(etape['duree']), "months")
-            etape['dureeInitial'] = moment.duration(parseFloat(etape['dureeInitial']), "months")
+            data[C.ETAPES][j]['debut'] = moment(data[C.ETAPES][j]['debut'], "YYYY-MM-DD")
+            data[C.ETAPES][j]['debutInitial'] = moment(data[C.ETAPES][j]['debutInitial'], "YYYY-MM-DD")
+            data[C.ETAPES][j]['duree'] = moment.duration(parseFloat(data[C.ETAPES][j]['duree']), "months")
+            data[C.ETAPES][j]['dureeInitial'] = moment.duration(parseFloat(data[C.ETAPES][j]['dureeInitial']), "months")
             
             
-            for (i = 0; i < etape['transactions'].length; i += 1) {
-              etape['transactions'][i]['date'] = moment(etape['transactions'][i]['date'], "YYYY-MM-DD")
-              etape['transactions'][i]['montant'] = parseFloat(etape['transactions'][i]['montant'])
+            for (i = 0; i < data[C.ETAPES][j]['transactions'].length; i += 1) {
+              data[C.ETAPES][j]['transactions'][i]['date'] = moment(data[C.ETAPES][j]['transactions'][i]['date'], "YYYY-MM-DD")
+              data[C.ETAPES][j]['transactions'][i]['montant'] = parseFloat(data[C.ETAPES][j]['transactions'][i]['montant'])
             }
           }
 
@@ -219,11 +220,12 @@
       },
       onScroll () {
         var scrollPosition = (document.documentElement.scrollTop || document.body.scrollTop) + 200, 
-            parts = document.querySelectorAll(".part")
+            parts = document.querySelectorAll(".part"),
+            i
         
-        for (let part of parts) {
-          if (part.offsetTop <= scrollPosition) {
-            this.activePart = part.id
+        for (i = 0; i < parts.length; i += 1) {
+          if (parts[i].offsetTop <= scrollPosition) {
+            this.activePart = parts[i].id
           }
         }
       }
@@ -250,6 +252,7 @@
     input {
       border-width: 0 0 1px 0;
       border-color: rgb(175, 175, 175);
+      border-style: solid;
       color: #212529;
 
       &.h2-size {

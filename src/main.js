@@ -13,6 +13,7 @@ require("./styles/_copic.scss")
 require("./styles/styles.scss")
 require("./vendor/bootstrap/bootstrap.bundle.min.js")
 require("./vendor/bootstrap/bootstrap.scss")
+require("./vendor/hover-master/hover.scss")
 
 
 const SERVER_URL = 'http://projets/server/';
@@ -30,5 +31,7 @@ new Vue({
   mounted () {
     this.$store.dispatch('connectUserFromIp')
     this.$store.dispatch('loadTypesEtapes')
+    this.$store.dispatch('loadAxes')
+    this.$store.dispatch('loadDirections')
   }
 })

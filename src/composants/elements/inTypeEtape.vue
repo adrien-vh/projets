@@ -1,11 +1,5 @@
 <template>
   <div>
-    <!--<input 
-           type="text"
-           :value="value"
-           @input="updateValue($event.target.value)"
-           v-show="editable"
-    >-->
     <span v-for="typeEtape in $store.state.typesEtapes" :key="typeEtape.num_typeEtape" v-if="typeEtape.num_typeEtape == value">
       <a href="#" @click.prevent="editing = true" v-show="editable">
         <i class="fa fa-square" aria-hidden="true" :style="{ color: '#' + typeEtape.couleur }"></i> {{ typeEtape.intitule }}

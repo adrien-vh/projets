@@ -5,10 +5,10 @@
     </div>-->
     <!--<h2>Synthèses</h2>-->
     <div id="listeSyntheses">
-      <div class="card pa10">
+      <div class="small-card pa10">
         <i class="fa fa-money fa-2x" aria-hidden="true"></i><br>
         Récapitulatif financier
-      </div><div class="card pa10">
+      </div><div class="small-card pa10">
         <i class="fa fa-wpforms fa-2x" aria-hidden="true"></i><br>
         Planning global
       </div>
@@ -17,15 +17,17 @@
     </div>
     <!--<h2>Projets en cours</h2>-->
     <div class="cards-container">
-      <div class="project-card pointer card" @click="newProject">
-        <div class="fs-12 mt10 txt-grey">&nbsp;</div>
+      <div class="project-card pointer card hvr-pop" @click="newProject">
+        
         <div class="nom"><div>NOUVEAU PROJET</div></div>
         <img src="../../assets/images/plus_116.png">
         <div class="fin">&nbsp;</div>
+        <div class="fs-12 mt10 txt-grey h45p oh pr15 pl15">&nbsp;</div>
+        <div class="fs-12 txt-grey">&nbsp;</div>
         <div>&nbsp;</div>
       </div>
-      <div v-for="projet in projets" :key="projet.num_projet" class="project-card pointer card" @click="openProject(projet.num_projet)">
-        <div class="fs-12 mt10 txt-grey">{{ projet.chefProjet }}&nbsp;</div>
+      <div v-for="projet in projets" :key="projet.num_projet" class="project-card pointer card hvr-grow" @click="openProject(projet.num_projet)">
+        <div v-for="axe in $store.state.axes" :key="axe.num_axe" class="bandeau-axe" :style="{ backgroundColor: '#' + axe.couleur }" v-if="axe.num_axe == projet.num_axe"></div>
         <div class="nom"><div>{{ projet.nom }}</div></div>
         <img v-if="delta(projet) < 2" src="../../assets/images/sun_116.png">
         <img v-else-if="delta(projet) < 3" src="../../assets/images/cloud_116.png">
@@ -33,75 +35,10 @@
         <img v-else src="../../assets/images/storm_116.png">
         <div class="fin">{{ $formatDate(projet.fin) }}</div>
         <div>{{ projet.budgetPrev }}<span v-if="projet.budgetPrev > 0"> 000</span> €</div>
+        <div class="fs-12 mt10 txt-grey h45p oh pr15 pl15" v-for="direction in $store.state.directions" :key="direction.num_direction" v-if="direction.num_direction == projet.num_direction">{{ direction.nom }}</div>
+        <div class="fs-12">{{ projet.chefProjet }}&nbsp;</div>
       </div>
     </div>
-   <!-- <table class="table table-hover table-sm table-striped">
-      <thead class="thead-dark">
-        <tr>
-          <th>Titre</th>
-          <th>Chef de projet</th>
-          <th>Date de fin</th>
-          <th>Budget prévisionnel</th>
-          <th></th>
-        </tr>
-      </thead>
-      <tbody>
-        <tr v-for="projet in projets" :key="projet.num_projet">
-          <td><b><router-link :to="'/projet/' + projet.num_projet">{{ projet.nom }}</router-link></b></td>
-          <td>{{ projet.chefProjet }}</td>
-          <td>{{ $formatDate(projet.fin) }}</td>
-          <td>{{ projet.budgetPrev }} 000 €</td>
-          <td>
-            <img v-if="delta(projet) < 2" src="../../assets/images/sun.png">
-            <img v-else-if="delta(projet) < 3" src="../../assets/images/cloud.png">
-            <img v-else-if="delta(projet) < 6" src="../../assets/images/rain.png">
-            <img v-else src="../../assets/images/storm.png">
-          </td>
-        </tr>
-        <tr>
-          <td><b>Plan lumière</b></td>
-          <td>François Houot</td>
-          <td>juillet 2018</td>
-          <td>50 000 €</td>
-          <td><img src="../../assets/images/sun.png" alt=""></td>
-        </tr>
-        <tr>
-          <td><b>Valorisation et préservation des espaces naturels remarquables</b></td>
-          <td>Christophe Armand</td>
-          <td>mars 2017</td>
-          <td>100 000 €</td>
-          <td><img src="../../assets/images/cloud.png" alt=""></td>
-        </tr>
-      </tbody>
-    </table>
-    <h2>Projets archivés</h2>
-    <table class="table table-hover table-sm table-striped">
-      <thead class="thead-dark">
-        <tr>
-          <th>Titre</th>
-          <th>Chef de projet</th>
-          <th>Date de fin</th>
-          <th>Budget prévisionnel</th>
-          <th></th>
-        </tr>
-      </thead>
-      <tbody>
-        <tr>
-          <td><b>Plan lumière</b></td>
-          <td>François Houot</td>
-          <td>juillet 2018</td>
-          <td>50 000 €</td>
-          <td><img src="../../assets/images/rain.png" alt=""></td>
-        </tr>
-        <tr>
-          <td><b>Valorisation et préservation des espaces naturels remarquables</b></td>
-          <td>Christophe Armand</td>
-          <td>mars 2017</td>
-          <td>100 000 €</td>
-          <td><img src="../../assets/images/storm.png" alt=""></td>
-        </tr>
-      </tbody>
-    </table>-->
   </div>
 </template>
 
@@ -142,8 +79,9 @@ export default {
 
   #pageAccueil {
     padding: 0 50px;
+    text-align: center;
 
-    .card {
+    .card, .small-card {
       background: #fff;
       border-radius: 2px;
       display: inline-block;
@@ -159,18 +97,34 @@ export default {
 
       cursor: pointer;
 
-      &:hover {
-        box-shadow: 0 14px 28px rgba(0,0,0,0.25), 0 10px 10px rgba(0,0,0,0.22);
-      }
+      
+    }
 
+    .card {
+      &:hover {
+        box-shadow: 0 10px 18px rgba(0,0,0,0.25), 0 5px 5px rgba(0,0,0,0.12);
+      }
+    }
+
+    .small-card {
+      &:hover {
+        box-shadow: 0 3px 8px rgba(0,0,0,0.25), 0 5px 5px rgba(0,0,0,0.12);
+      }
     }
 
     .cards-container {
 
       .project-card {
-        height: 330px;
-        
+        height: 350px;
+        position: relative;
 
+        .bandeau-axe {
+          position: absolute;
+          height: 5px;
+          top: 0;
+          left: 0;
+          width: 100%;
+        }
         .nom {
           display: table-cell;
           vertical-align: middle;
@@ -188,7 +142,7 @@ export default {
         }
       } 
     }
-
+/*
     #listeSyntheses {
       padding-bottom: 20px;
       a {
@@ -209,7 +163,7 @@ export default {
       td {
         vertical-align: middle;
       }
-    }
+    }*/
   }
   tr {
     cursor: pointer;

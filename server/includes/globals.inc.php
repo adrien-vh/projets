@@ -5,9 +5,11 @@
 	define ('IP_FILE_EXT',			'ip');
 
 	define('ACTION', 					'action');
+	define('AXES', 						'axes');
 	define('CHARGE_PROJET', 	'chargeProjet');
 	define('CONSTANTS', 			'constants');
 	define('CREER_VERSION', 	'creerVersion');
+	define('DIRECTIONS',		 	'directions');
 	define('ETAPES', 					'etapes');
 	define('EXTENSION',				'ext');
 	define('FICHIER_UPLOAD',	'uploadfile');
@@ -24,6 +26,7 @@
 	define('PRECEDENT', 			'precedent');
 	define('PROJET', 					'projet');
 	define('SAUVE_PROJET', 		'sauveProjet');
+	define('SOUS_AXES', 			'sousAxes');
 	define('SUIVANT',			 		'suivant');
 	define('TYPES_ETAPES', 		'typesEtapes');
 	define('UPLOAD', 					'upload');
