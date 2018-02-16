@@ -70,7 +70,6 @@
             momentStart = this.steps[i].debutInitial
           }
         }
-        console.log(momentStart.format())
         return moment(momentStart).subtract(1, 'months')
       },
       ganttEndDate () {
@@ -232,7 +231,6 @@
         } else {
           $(this.$el).find(".step-visual.changeable").each(
             function () {
-              console.log("ici")
               if (interact.isSet(this)) {
                 interact(this).unset()
               }

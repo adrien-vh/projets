@@ -23,7 +23,7 @@
 <script>
 export default {
     props: {
-        value: String,
+        value: {},
         editable: Boolean,
         listeElements: Array,
         champValeur: String,
@@ -57,7 +57,7 @@ export default {
     input {
       width: calc(100% - 20px) !important;
       background-color: transparent;
-      border: none;
+      border: none !important;
       color: $CB14 !important;
       cursor: pointer;
       text-decoration: underline;

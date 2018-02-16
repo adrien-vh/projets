@@ -5,6 +5,7 @@ import App from './composants/App.vue'
 import store from './store.js'
 import router from './router.js'
 import Global from './composants/Global.vue'
+import Server from './composants/Server.vue'
 
 
 require("./styles/ibm-type.css")
@@ -18,10 +19,10 @@ require("./vendor/hover-master/hover.scss")
 
 const SERVER_URL = 'http://projets/server/';
 
-console.log(C)
 moment.locale('fr')
 
 Vue.mixin(Global)
+Vue.mixin(Server)
 
 new Vue({
   el: '#app',
@@ -29,9 +30,10 @@ new Vue({
   store,
   render: h => h(App),
   mounted () {
-    this.$store.dispatch('connectUserFromIp')
-    this.$store.dispatch('loadTypesEtapes')
-    this.$store.dispatch('loadAxes')
-    this.$store.dispatch('loadDirections')
+    this.$$connectUserFromIp()
+    this.$$loadTypesEtapes()
+    this.$$loadAxes()
+    this.$$loadDirections()
+    this.$$loadUtilisateurs()
   }
 })

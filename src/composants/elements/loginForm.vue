@@ -14,10 +14,10 @@
         </div>
         <button 
           class="btn btn-primary btn-block" type="submit"
-          :class="{ disabled: $store.state.server.runningQueries > 0 }"
+          :class="{ disabled: $$runningQueries() > 0 }"
         >
-          <i class="fa fa-spinner fa-pulse fa-fw" v-show="$store.state.server.runningQueries > 0"></i>
-          <span v-show="$store.state.server.runningQueries === 0">S'identifier</span>
+          <i class="fa fa-spinner fa-pulse fa-fw" v-show="$$runningQueries() > 0"></i>
+          <span v-show="$$runningQueries() === 0">S'identifier</span>
         </button>
       </form>
       <div id="authIp" v-show="$store.state.ipUser.login">
@@ -44,7 +44,7 @@
 
         loginDatas[C.LOGIN] = this.login
         loginDatas[C.PASSWORD] = this.password
-        this.$store.dispatch('connectWithLoginPassword', loginDatas)
+        this.$$connectWithLoginPassword(loginDatas)
       }
     },
     mounted () {

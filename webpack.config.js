@@ -13,6 +13,7 @@ module.exports = {
     new webpack.ProvidePlugin({'VueRouter': path.resolve(__dirname, "./src/vendor/vue/vue-router.js")}),
     new webpack.ProvidePlugin({'Vuex': path.resolve(__dirname, "./src/vendor/vue/vuex.js")}),
     new webpack.ProvidePlugin({'$': path.resolve(__dirname, "./src/vendor/jquery-3.2.1.min.js")}),
+    new webpack.ProvidePlugin({'jQuery': path.resolve(__dirname, "./src/vendor/jquery-3.2.1.min.js")}),
     new webpack.ProvidePlugin({'ss': path.resolve(__dirname, "./src/vendor/SimpleAjaxUploader.js")})
   ],
   module: {

@@ -140,7 +140,6 @@
             this.$emit("select", step)
           },
           updateGanttDiag () {
-            console.log('updateGantt')
             this.updateGantt = !this.updateGantt
           }
         }

@@ -22,7 +22,7 @@ export default {
     props: { value: Object, editable: Boolean, defaultValue: Number, minValue: Number },
 
     methods: {
-        updateValue (value) { console.log("ici"); this.$emit('input', moment.duration(parseFloat(this.currentValue), 'months')) }
+        updateValue (value) { this.$emit('input', moment.duration(parseFloat(this.currentValue), 'months')) }
     }
 }
 </script>

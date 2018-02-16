@@ -26,11 +26,15 @@ export default {
       multiple: true,
 
       onComplete:   function(filename, response) {
-        var event = {
+        me.$store.commit('addInfoFichier', {
           num_fichier: response.num_fichier,
-          nom: response.nom_fichier
-        }
-        me.$emit("add", event)
+          nom: response.nom_fichier,
+          nomFS: response.nom_fichier_fs,
+          ext: response.ext,
+          pdfExist: false
+        })
+
+        me.$emit("add", response.num_fichier)
         /*console.log(response)
           if (!response) {
             alert(filename + 'upload failed');

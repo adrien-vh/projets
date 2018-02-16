@@ -1,10 +1,47 @@
 <script>
     export default {
         methods: {
-            $test (val) { return "Retour de la sdfmethode" },
             $formatDate (date) { return date.format("MMM YYYY ") },
             $stepEndDate (step) {
                 return moment(step.debut).add(step.duree).subtract(1, "d")
+            },
+            $showModal (title, content, grande = false, confirmation = false, onConfirm = function () {}) {
+                this.$store.state.modale.titre = title
+                this.$store.state.modale.contenu = content
+                this.$store.state.modale.grande = grande
+                this.$store.state.modale.confirmation = confirmation
+                this.$store.state.modale.onConfirm = onConfirm
+                $('#modaleGlobale').modal()
+            },
+            $stringify (element) {
+                var i, prop
+
+                if (moment.isMoment(element)) {
+                    return element.format("YYYY-MM-DD")
+                }
+                
+                if (moment.isDuration(element)) {
+                    return element.asMonths()
+                }
+
+                if (typeof element === "string" || typeof element === "number" || typeof element === "boolean") {
+                    return element
+                }
+
+                if (Array.isArray(element)) {
+                    for (i = 0; i < element.length; i += 1) {
+                        element[i] = this.$stringify(element[i])
+                    }
+                    return element
+                }
+
+                for(prop in element) {
+                    if (element.hasOwnProperty(prop)) {
+                        element[prop] = this.$stringify(element[prop])
+                    }
+                }
+                return element
+
             }
         }
     }

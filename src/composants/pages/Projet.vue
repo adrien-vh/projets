@@ -16,27 +16,29 @@
       <ul>
         <li><a href="#" :class="{ active: activePart == 'fiche' }" @click.prevent="goTo('fiche')">Présentation</a></li>
         <li><a href="#" :class="{ active: activePart == 'analyse' }" @click.prevent="goTo('analyse')">Présentation détaillée</a></li>
+        <li><a href="#" :class="{ active: activePart == 'financement' }" @click.prevent="goTo('financement')">Financement</a></li>
         <li><a href="#" :class="{ active: activePart == 'phases' }" @click.prevent="goTo('phases')">Calendrier</a></li>
-        <li><a href="#" :class="{ active: activePart == 'fiches' }" @click.prevent="goTo('fiches')">Fiche étape</a></li>
+        <li><a href="#" :class="{ active: activePart == 'fiches' }" @click.prevent="goTo('fiches')">Fiche phase</a></li>
+        <li><a href="#" :class="{ active: activePart == 'droits' }" @click.prevent="goTo('droits')">Droits d'accès</a></li>
       </ul>
       <!--fin MENU -->
 
       <!-- METAS -->
       <span class="fs-12 txt-center w100 ib">
-        <router-link :to="'/projet/' + num_projetPrec" id="menuLogo" v-if="num_projetPrec"><i class="fa fa-chevron-left fa-lg" aria-hidden="true"></i></router-link>&nbsp;
+        <router-link :to="'/projet/' + num_projetPrec" id="menuLogo" :class="{inactive : !num_projetPrec}"><i class="fa fa-chevron-left fa-lg" aria-hidden="true"></i></router-link>&nbsp;
         v. <span class="fs-18">{{ projet.version }}</span>
-        &nbsp;<router-link :to="'/projet/' + num_projetSuiv" id="menuLogo" v-if="num_projetSuiv"><i class="fa fa-chevron-right fa-lg" aria-hidden="true"></i></router-link>
+        &nbsp;<router-link :to="'/projet/' + num_projetSuiv" id="menuLogo" :class="{inactive : !num_projetSuiv}"><i class="fa fa-chevron-right fa-lg" aria-hidden="true"></i></router-link>
       </span> <br>
       <span v-show="projet.brouillon == '1'" class="fs-12 txt-grey w100 txt-center ib">(version provisoire)<br></span>
       <span v-show="!isLastVersion" class="fs-12 txt-red w100 txt-center ib">Version obsolète !</span>
 
       <div class="txt-center mt20">
 
-        <a href="#" class="round-button blue" @click.prevent="sauveProjet(false)" v-show="editing">
+        <a href="#" class="round-button blue" @click.prevent="sauveProjet(false)" v-show="editing" :class="{ inactive: !unsaved }">
           <i class="fa fa-floppy-o" aria-hidden="true"></i> Enregistrer
         </a>
 
-        <a href="#" class="round-button blue" @click.prevent="editing = true" v-show="!editing && projet.brouillon == '1'">
+        <a href="#" class="round-button blue" @click.prevent="editing = true; unsaved = false" v-show="!editing && projet.brouillon == '1'">
           <i class="fa fa-pencil" aria-hidden="true"></i> Éditer
         </a>
 
@@ -51,6 +53,10 @@
       </div>
       <!--{{ etapes.length }}-->
       <!--fin METAS-->
+      <span v-show="editing && unsaved" class="fs-12 txt-white w100 txt-center ib bg-red pt10 pb10 br10 mt20">
+        <i class="fa fa-exclamation-triangle fa-lg" aria-hidden="true"></i><br>
+        Non enregistré !
+      </span>
     </nav>
     <div class="contenu">
 
@@ -61,18 +67,39 @@
         <tr><td><inText v-model="projet.nom" :editable="editing"></inText></td></tr>
       </table>
 
+      
+      <h5 id="droits" class="part">Droits d'accès</h5>
+      <listeDroits :projet="projet" :editable="editing"></listeDroits>
+
       <h5 id="fiche" class="part">Présentation du projet</h5>
       <formPresentation :projet="projet" :editable="editing"></formPresentation>
 
       <h5 id="analyse" class="part">Présentation détaillée du projet</h5>
       <formPresentationD :projet="projet" :instances="instances" :editable="editing" :numProjet="num_projet"></formPresentationD>      
       
+      <h5 id="financement" class="part">Financement :</h5>
+      <listeFinancements :projet="projet" :editable="editing"></listeFinancements>
+
       <h5 id="phases" class="part">Calendrier du projet :</h5>
       <formCalendrier :numProjet="num_projet" :etapes="etapes" :editable="editing" @select="selectEtape($event)" @update="setDelta($event)"></formCalendrier>
       
-      <h5 id="fiches" class="part">Fiche étape :</h5>
+      <div class="fs-18 txt-center mt20" v-show="etapeCourante !== null">
+        <a href="#" :class="{ inactive: indexEtapeCourante == 0 }" @click.prevent="etapeCourante = etapes[indexEtapeCourante - 1]">
+          <i aria-hidden="true" class="fa fa-chevron-left fa-lg"></i>
+        </a>
+        Phase {{ indexEtapeCourante + 1 }} / {{ etapes.length }}
+        <a href="#" :class="{ inactive: indexEtapeCourante === etapes.length - 1}" @click.prevent="etapeCourante = etapes[indexEtapeCourante + 1]">
+          <i aria-hidden="true" class="fa fa-chevron-right fa-lg"></i>
+        </a>
+      </div>
+      <h5 id="fiches" class="part" v-if="etapeCourante !== null">Phase : {{ etapeCourante.nom }}</h5>
       <ficheEtape :projet="projet" :etape="etapeCourante" :editable="editing" v-if="etapeCourante != null"></ficheEtape>
+
+
     </div>
+    <!--<div class="pdf-container">
+      <iframe src="http://projets/server/pdf.php"></iframe>
+    </div>-->
   </div>
 </template>
 
@@ -88,10 +115,12 @@
   import formPresentationD from '../elements/formPresentationD'
   import ficheEtape from '../elements/ficheEtape'
   import formCalendrier from '../elements/formCalendrier'
+  import listeFinancements from '../elements/listeFinancements'
+  import listeDroits from '../elements/listeDroits'
   
     
   export default {
-    components: { inLongText, gantt, inNumber, inDuration, inText, inDate, inMonth, formPresentation, formPresentationD, ficheEtape, formCalendrier },
+    components: { inLongText, gantt, inNumber, inDuration, inText, inDate, inMonth, formPresentation, formPresentationD, ficheEtape, formCalendrier, listeFinancements, listeDroits },
     props: {
       num_projet: { type: String, default: "0" }
     },
@@ -101,23 +130,39 @@
           this.editing = false
         }
         this.chargeProjet()
-      }
+      },
+      projet: {
+        handler () { this.unsaved = true },
+        deep: true
+      },
+      instances: {
+        handler () { this.unsaved = true },
+        deep: true
+      },
     },
     data () {
       return {
         editing: true,
         activePart: "fiche",
-        projet: { },
+        projet: { etapes: [] },
         isLastVersion: true,
         instances: [],
         etapeCourante: null,
-        etapes: [], 
         num_projetPrec: null,
         num_projetSuiv: null,
-        delta: -1
+        delta: -1,
+        unsaved: false,
+        financements: []
       }
     },
-    computed: { },
+    computed: {
+      etapes () {
+        return this.projet[C.ETAPES]
+      },
+      indexEtapeCourante () {
+        return this.etapes.indexOf(this.etapeCourante)
+      }
+    },
     methods: {
       formatDuration (duration) { return duration.asMonths() + " mois" },
       setDelta (delta) {
@@ -133,18 +178,17 @@
         this.goTo('fiches')
       },
       newVersion () {
-        console.log(this.projet.brouillon)
         var donnees = {}, me = this
         donnees[C.NUM_PROJET] = this.num_projet
-        this.$store.state.server.call (C.CREER_VERSION, function (data) {
+        this.$$ServerCall (C.CREER_VERSION, function (data) {
           me.$router.push("/projet/" + data[C.NUM_PROJET])
         }, donnees)
           
       },
-      formattedSteps () {
+      /*formattedSteps () {
         var retour = [], tmp, i, j
         for (j=0; j < this.etapes.length; j += 1) {
-          tmp = $.extend({}, this.etapes[j])
+          tmp = $.extend(true, {}, this.etapes[j])
           tmp.debut = tmp.debut.format("YYYY-MM-DD")
           if (tmp.debutInitial) {
             tmp.debutInitial = tmp.debutInitial.format("YYYY-MM-DD")
@@ -156,27 +200,28 @@
           if (tmp.transactions) {
             
             for (i = 0; i < tmp.transactions.length; i += 1) {
-              console.log(tmp.transactions[i])
               tmp.transactions[i].date = tmp.transactions[i].date.format("YYYY-MM-DD")
             }
           }
           retour.push(tmp)
         }
         return retour
-      },
+      },*/
       sauveProjet (validate) {
         var donnees = {}, me = this
-        donnees[C.PROJET] = this.projet
-        donnees[C.ETAPES] = this.formattedSteps()
+
+        donnees[C.PROJET] = this.$stringify($.extend(true, {}, this.projet))
         donnees[C.NUM_PROJET] = this.num_projet
         donnees[C.INSTANCES] = this.instances
         donnees[C.VALIDE_PROJET] = validate ? '1' : '0'
 
-        this.$store.state.server.call (C.SAUVE_PROJET, function (data) {
-          me.editing = false
+        this.$$ServerCall (C.SAUVE_PROJET, function (data) {
+          me.unsaved = false
+          me.editing = !validate
           if (parseFloat(me.num_projet) === 0) {
             me.$router.push("/projet/" + data[C.NUM_PROJET])
-          } else {
+          }
+          if (validate) {
             me.chargeProjet()
           }
         }, donnees )
@@ -184,34 +229,44 @@
       chargeProjet () {
         var donnees = {}, me = this, i, j
         donnees[C.NUM_PROJET] = this.num_projet
-        this.$store.state.server.call (C.CHARGE_PROJET, function (data) {
+        this.$$ServerCall (C.CHARGE_PROJET, function (data) {
           
+          
+
           delete data.projet.num_projet
           data.projet.budgetPrev = parseFloat(data.projet.budgetPrev)
           data.projet.dureePrev = parseFloat(data.projet.dureePrev)
-          me.projet = data[C.PROJET]
+          
           me.isLastVersion = data[C.IS_LAST_VERSION]
           me.instances = data[C.INSTANCES]
           me.num_projetPrec = data[C.PRECEDENT]
           me.num_projetSuiv = data[C.SUIVANT]
+          
 
-          for (j = 0; j < data[C.ETAPES].length; j += 1) {
+          for (j = 0; j < data.projet[C.ETAPES].length; j += 1) {
             
-            data[C.ETAPES][j]['debut'] = moment(data[C.ETAPES][j]['debut'], "YYYY-MM-DD")
-            data[C.ETAPES][j]['debutInitial'] = moment(data[C.ETAPES][j]['debutInitial'], "YYYY-MM-DD")
-            data[C.ETAPES][j]['duree'] = moment.duration(parseFloat(data[C.ETAPES][j]['duree']), "months")
-            data[C.ETAPES][j]['dureeInitial'] = moment.duration(parseFloat(data[C.ETAPES][j]['dureeInitial']), "months")
+            data.projet[C.ETAPES][j]['debut'] = moment(data.projet[C.ETAPES][j]['debut'], "YYYY-MM-DD")
+            data.projet[C.ETAPES][j]['debutInitial'] = moment(data.projet[C.ETAPES][j]['debutInitial'], "YYYY-MM-DD")
+            data.projet[C.ETAPES][j]['duree'] = moment.duration(parseFloat(data.projet[C.ETAPES][j]['duree']), "months")
+            data.projet[C.ETAPES][j]['dureeInitial'] = moment.duration(parseFloat(data.projet[C.ETAPES][j]['dureeInitial']), "months")
             
             
-            for (i = 0; i < data[C.ETAPES][j]['transactions'].length; i += 1) {
-              data[C.ETAPES][j]['transactions'][i]['date'] = moment(data[C.ETAPES][j]['transactions'][i]['date'], "YYYY-MM-DD")
-              data[C.ETAPES][j]['transactions'][i]['montant'] = parseFloat(data[C.ETAPES][j]['transactions'][i]['montant'])
+            for (i = 0; i < data.projet[C.ETAPES][j]['transactions'].length; i += 1) {
+              data.projet[C.ETAPES][j]['transactions'][i]['date'] = moment(data.projet[C.ETAPES][j]['transactions'][i]['date'], "YYYY-MM-DD")
+              data.projet[C.ETAPES][j]['transactions'][i]['montant'] = parseFloat(data.projet[C.ETAPES][j]['transactions'][i]['montant'])
             }
           }
 
-          me.etapes = data[C.ETAPES]
-          if (me.etapes.length > 0) {
-            me.etapeCourante = me.etapes[0]
+          for (j = 0; j < data.projet[C.FINANCEMENT].length; j += 1) {
+            data.projet[C.FINANCEMENT][j].date = moment(data.projet[C.FINANCEMENT][j].date, "YYYY-MM-DD")
+            data.projet[C.FINANCEMENT][j].montant = parseFloat(data.projet[C.FINANCEMENT][j].montant)
+          }
+
+          me.projet = data[C.PROJET]
+
+          me.financements = data.projet[C.FINANCEMENT]
+          if (data.projet[C.ETAPES].length > 0) {
+            me.etapeCourante = data.projet[C.ETAPES][0]
           }
         }, donnees )
       },
@@ -251,7 +306,7 @@
     
     input {
       border-width: 0 0 1px 0;
-      border-color: rgb(175, 175, 175);
+      border-color: rgb(230, 230, 230);
       border-style: solid;
       color: #212529;
 
@@ -260,7 +315,7 @@
       }
     }
 
-    h5 {
+    h5.part {
       background-color: $CN5;
       color: #fff;
       margin-top: 25px;

@@ -29,6 +29,7 @@ export default { }
     box-shadow: 0 0 10px rgba(90,85,79,.7);
     padding: 0 5px 10px 5px;
     transition: all .3s ease-in-out;
+    z-index: 400;
     
     i.fa-check { color: $CYG07; }
     i.fa-info { color: $CB26; }

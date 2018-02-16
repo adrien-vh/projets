@@ -13,22 +13,25 @@ export default new Vuex.Store ({
       login: null,
       fullName: null
     },
+    modale: {
+      titre: "",
+      contenu: "",
+      grande: true,
+      confirmation: false,
+      onConfirm: function () {}
+    },
     typesEtapes: [],
     axes: [],
     sousAxes: [],
     directions: [],
-    server : {
-      runningQueries : 0,
-      call (action, callback = null, datas = {}) {
-        var me = this
-        this.runningQueries += 1
-        $.post(C.SERVER_URL + action, datas, function (data) {
-          me.runningQueries -= 1
-          callback(data)
-        })
-      }
-    },
-    messages : []
+    messages : [],
+    utilisateurs: [],
+    infosFichiers: [],
+    niveauxDroits: [
+      { niveau: 0, label: "lecture seule" },
+      { niveau: 1, label: "lecture / écriture" },
+      { niveau: 2, label: "lecture / écriture / validation" }
+    ]
   },
   mutations: {
     logout (state) {
@@ -58,47 +61,21 @@ export default new Vuex.Store ({
     },
     setDirections (state, directions) {
       state.directions = directions
+    },
+    setUtilisateurs (state, utilisateurs) {
+      state.utilisateurs = utilisateurs
+    },
+    addInfoFichier (state, infoFichier) {
+      state.infosFichiers[parseInt(infoFichier.num_fichier)] = infoFichier
     }
   },
   actions: {
-    connectUserFromIp (context) {
-      context.state.server.call (C.IPUSER, function (data) {
-        context.commit('setUser', data[C.USER])
-        context.commit('setIpUser', data[C.USER])
-      })
-    },
     displayMessage (context, message) {
       context.state.messages.push(message)
       setTimeout(
         function () { context.state.messages.shift() },
         3000
       )
-    },
-    connectWithLoginPassword (context, loginDatas) {
-      context.state.server.call (C.LOGIN, function (data) {
-        context.commit('setUser', data[C.USER])
-        if (data[C.USER].login) {
-          context.dispatch('displayMessage', { type: 'success', text: 'Connexion réussie !' })
-        } else {
-          context.dispatch('displayMessage', { type: 'error', text: "Erreur d'authentification" })
-        }
-      }, loginDatas)
-    },
-    loadTypesEtapes (context) {
-      context.state.server.call (C.TYPES_ETAPES, function (data) {
-        context.commit('setTypesEtapes', data[C.TYPES_ETAPES])
-      })
-    },
-    loadAxes (context) {
-      context.state.server.call (C.AXES, function (data) {
-        context.commit('setAxes', data[C.AXES])
-        context.commit('setSousAxes', data[C.SOUS_AXES])
-      })
-    },
-    loadDirections (context) {
-      context.state.server.call (C.DIRECTIONS, function (data) {
-        context.commit('setDirections', data[C.DIRECTIONS])
-      })
     }
   }
 })

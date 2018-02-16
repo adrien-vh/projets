@@ -24,7 +24,28 @@ class Bdd {
 			$this->pdo->exec("set names utf8");
 		}
 	}
+
+	public function fileName ($_num_fichier) {
+		return $this->varFromRequete(
+			"SELECT nomFS FROM fichier WHERE num_fichier = :num_fichier",
+			array(
+				":num_fichier" => $_num_fichier
+			)
+			);
+	}
 	
+	public function utilisateurs ($_q) {
+		return $this->arrayFromRequete(
+			"SELECT * FROM utilisateur WHERE nom LIKE '%".$_q."%' ORDER BY nom"
+		);
+	}
+
+	public function nomUtilisateur($_num_utilisateur) {
+		return $this->varFromRequete(
+			"SELECT nom FROM utilisateur WHERE num_utilisateur = ".$_num_utilisateur
+		);
+	}
+
 	public function getUserFullName($_login) {
 		return $this->varFromRequete(
 			"SELECT nom FROM utilisateur WHERE login = :login",
@@ -127,10 +148,21 @@ class Bdd {
 				$this->execRequete(
 					"INSERT IGNORE INTO fichier_instance (num_fichier, num_instance) VALUES (:num_fichier, :num_instance)",
 					array(
-						':num_fichier' => $fichier['num_fichier'],
+						':num_fichier' => $fichier,
 						':num_instance' => $instance['num_instance']
 					)
 				);
+			}
+		}
+	}
+
+	public function sauveFinancement($_financements, $_num_projet) {
+		foreach($_financements as $financement) {
+			if (isset($financement['num_financement'])) {		
+				$this->updateFromObject($financement, "financement", "num_financement", $financement['num_financement']);
+			} else {
+				$financement['num_projet'] = $_num_projet;
+				$financement['num_financement'] = $this->insertObject($financement, "financement");
 			}
 		}
 	}
@@ -171,6 +203,7 @@ class Bdd {
 				if (!isset($etape['commentaires'])) { $etape['commentaires'] = ""; }
 				if (!isset($etape['objectifs'])) { $etape['objectifs'] = ""; }
 				$num_etape = $this->insertObject($etape, "etape");
+				$nums_etape[] = $num_etape;
 			}
 			foreach($transactions as $transaction) {
 				$this->sauveTransaction($transaction, $num_etape);
@@ -179,7 +212,7 @@ class Bdd {
 
 		$this->execRequete("UPDATE etape SET supprime = 1 WHERE num_etape NOT IN (".implode(",", $nums_etape).") AND num_projet = ".$_num_projet);
 
-		return $retour;
+		return $nums_etape;
 	}
 
 	public function sauveTransaction($_transaction, $_num_etape) {
@@ -214,7 +247,7 @@ class Bdd {
 		$version = $this->varFromRequete("SELECT `version` FROM projet WHERE num_projet = :num_projet", array(':num_projet' => $_num_projet));
 		$num_projetInitial = $this->num_projetInitial($_num_projet);
 		return $this->varFromRequete(
-			"SELECT num_projet FROM projet WHERE `version` = (SELECT MIN(`version`) FROM projet WHERE num_projetInitial = :num_projetInitial AND `version` > :version)",
+			"SELECT num_projet FROM projet WHERE num_projetInitial = :num_projetInitial AND `version` = (SELECT MIN(`version`) FROM projet WHERE num_projetInitial = :num_projetInitial AND `version` > :version)",
 			array(
 				":num_projetInitial" => $num_projetInitial,
 				":version" => $version
@@ -231,13 +264,22 @@ class Bdd {
 		);
 
 		foreach($instances as $instance) {
-			$instance->fichiers = $this->arrayFromRequete(
-				"SELECT * FROM fichier WHERE num_fichier IN (SELECT num_fichier FROM fichier_instance WHERE num_instance = :num_instance)",
+			$instance->fichiers = $this->simpleArrayFromRequete(
+				"SELECT num_fichier FROM fichier_instance WHERE num_instance = :num_instance",
 				array(":num_instance" => $instance->num_instance)
 			);
 		}
 
 		return $instances;
+	}
+	
+	public function chargeFinancements($_num_projet) {
+		$num_projetInitial = $this->num_projetInitial($_num_projet);
+		//return $num_projetInitial;
+		return $this->arrayFromRequete(
+			"SELECT * FROM financement WHERE num_projet IN ( SELECT num_projet FROM projet WHERE num_projetInitial = :num_projetInitial)",
+			array (":num_projetInitial" => $num_projetInitial)
+		);
 	}
 
 	public function chargeEtapes($_num_projet) {
@@ -253,8 +295,30 @@ class Bdd {
 				"SELECT * FROM `transaction` WHERE num_etape = :num_etape",
 				array(":num_etape" => $etape->num_etape)
 			);
+
+			/*if (intval($etape->validationFichier) != -1) {
+				$etape->validationFichier = $this->objFromRequete(
+					"SELECT * FROM fichier WHERE num_fichier = :num_fichier",
+					array(":num_fichier" => $etape->validationFichier)
+				);
+				if (file_exists(PDF_FOLDER.'/'.$etape->validationFichier->num_fichier.'.pdf')) {
+					$etape->validationFichier->pdfExist = true;
+				} else {
+					$etape->validationFichier->pdfExist = false;
+				}
+			}*/
 		}
+
+
+
 		return $etapes;
+	}
+
+	public function droits ($_num_projet) {
+		return $this->arrayFromRequete(
+			"SELECT * FROM droit WHERE num_projet = :num_projet",
+			array( ":num_projet" => $_num_projet )
+		);
 	}
 
 	public function isLastVersion($_num_projet) {
@@ -321,6 +385,21 @@ class Bdd {
 
 		return $num_projet;
 	}
+
+	public function infosFichier($_num_fichier) {
+		$retour = $this->objFromRequete(
+			"SELECT * FROM fichier WHERE num_fichier = :num_fichier",
+			array(":num_fichier" => $_num_fichier)
+		);
+
+		if (file_exists(PDF_FOLDER.'/'.$_num_fichier.'.pdf')) {
+			$retour->pdfExist = true;
+		} else {
+			$retour->pdfExist = false;
+		}
+
+		return $retour;
+	}
 	
 	private function num_projetInitial ($_num_projet) {
 		return intval($this->varFromRequete(
@@ -340,9 +419,10 @@ class Bdd {
 		$liste_affectations = array();
 		$liste_champs_prefixe = array();
 		$liste_valeurs = array();
+		$liste_champs_existants = $this->getFields($_table);
 
 		foreach ((array) $_objet as $key => $value) {
-			if ($key != $_champIndex) {
+			if ($key != $_champIndex && in_array($key, $liste_champs_existants)) {
 				$liste_affectations[] = "`".$key."` = :".$key;
 				$liste_valeurs[":".$key] = $value;
 			}
@@ -361,16 +441,23 @@ class Bdd {
 		$liste_champs = array();
 		$liste_champs_prefixe = array();
 		$liste_valeurs = array();
+		$liste_champs_existants = $this->getFields($_table);
 
 		foreach ((array) $_objet as $key => $value) {
-			$liste_champs[] = "`".$key."`";
-			$liste_champs_prefixe[] = ":".$key;
-			$liste_valeurs[":".$key] = $value;
+			if (in_array($key, $liste_champs_existants)) {
+				$liste_champs[] = "`".$key."`";
+				$liste_champs_prefixe[] = ":".$key;
+				$liste_valeurs[":".$key] = $value;
+			}
 		}
-
+ 
 		$requete = "INSERT INTO `".$_table."` (".implode(", ", $liste_champs).") VALUES (".implode(", ", $liste_champs_prefixe).")";
 
 		return $this->insertFromRequete($requete, $liste_valeurs);;
+	}
+
+	public function getFields($_table) {
+		return $this->simpleArrayFromRequete("DESCRIBE ".$_table);
 	}
 
 	// Test exécution requête

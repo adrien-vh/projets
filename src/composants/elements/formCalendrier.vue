@@ -32,7 +32,16 @@
             <td><inMonth v-model="etapes[m-1].debut" :editable="editable" @input="updateGanttDiag"></inMonth></td>
             <td v-html="$formatDate(endDate(etapes[m-1]))"></td>
             <td><inDuration v-model="etapes[m-1].duree" :editable="editable" @input="updateGanttDiag"></inDuration></td>
-            <td><inTypeEtape v-model="etapes[m-1].num_typeEtape" :editable="editable"></inTypeEtape></td>
+            <td>
+              <inChoixMultiple
+                  v-model="etapes[m-1].num_typeEtape"
+                  :listeElements="$store.state.typesEtapes"
+                  :champValeur="'num_typeEtape'"
+                  :champLabel="'intitule'"
+                  :champCouleur="'couleur'"
+                  :editable="editable"
+              ></inChoixMultiple>
+            </td>
             <td v-show="editable">
               <button 
                 v-show="etapes[m-1].num_projet == numProjet"
@@ -140,7 +149,6 @@
             this.$emit("select", step)
           },
           updateGanttDiag () {
-            console.log('updateGantt')
             this.updateGantt = !this.updateGantt
           }
         }

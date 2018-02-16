@@ -36,7 +36,16 @@
         </tr>
         <tr>
             <td><inText v-model="projet.pilotePolitique" :editable="editable"></inText></td>
-            <td><inText v-model="projet.chefProjet" :editable="editable"></inText></td>
+            <td>
+                <inAc
+                    :source="$store.state.utilisateurs"
+                    v-model="projet.chefProjet"
+                    labelField="nom"
+                    valueField="login"
+                    :editable="editable"
+                >
+                </inAc>
+            </td>
         </tr>
         <tr>
             <th colspan="2">Equipe projet interne :  </th>
@@ -87,10 +96,17 @@
     import inNumber from './inNumber'
     import inText from './inText'
     import inChoixMultiple from './inChoixMultiple'
+    import inAc from './inAc'
 
     export default {
-        components: { inLongText, inNumber, inText, inChoixMultiple },
-        props: { projet: { type: Object, default: {} }, editable: { type: Boolean, default: false }}
+        components: { inLongText, inNumber, inText, inChoixMultiple, inAc },
+        props: { projet: { type: Object, default: {} }, editable: { type: Boolean, default: false }},
+
+        methods: {
+            setChefProjet (utilisateur) {
+                console.log(utilisateur)
+            }
+        }
     }
 </script>
 

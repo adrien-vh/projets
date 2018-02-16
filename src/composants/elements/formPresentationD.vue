@@ -25,21 +25,21 @@
           </tr>
         </thead>
         <tbody>
-          <tr v-for="instance in instances">
+          <tr v-for="m in instances.length" :key="m">
             <td>
-                <inText v-model="instance.nom" :editable="editable && instance.num_projet == numProjet"></inText>
+                <inText v-model="instances[m-1].nom" :editable="editable && instances[m-1].num_projet == numProjet"></inText>
             </td>
             <td>
-              <inText v-model="instance.dates" :editable="editable && instance.num_projet == numProjet"></inText>
+              <inText v-model="instances[m-1].dates" :editable="editable && instances[m-1].num_projet == numProjet"></inText>
             </td>
             <td>
-              <inText v-model="instance.commentaires" :editable="editable && instance.num_projet == numProjet"></inText>
+              <inText v-model="instances[m-1].commentaires" :editable="editable && instances[m-1].num_projet == numProjet"></inText>
             </td>
             <td>
-              <span v-for="fichier in instance.fichiers">{{ fichier.nom }}<br></span>
-              <in-file @add="ajoutFichierInstance($event, instance)"></in-file>
+              <listeFichiers :fichiers="instances[m-1].fichiers"></listeFichiers>
+              <in-file v-show="editable" @add="ajoutFichierInstance($event, instances[m-1])"></in-file>
             </td>
-            <td v-show="editable"><button v-show="instance.num_projet == numProjet" class="btn btn-danger btn-sm pointer mb10">Supprimer</button></td>
+            <td v-show="editable"><button v-show="instances[m-1].num_projet == numProjet" class="btn btn-danger btn-sm pointer mb10">Supprimer</button></td>
           </tr>
           <tr v-show="editable">
             <td>
@@ -52,7 +52,7 @@
               <inText v-model="newInstance.commentaires" :editable="true"></inText>
             </td>
             <td>
-              <span v-for="fichier in newInstance.fichiers" :key="fichier.num_fichier">{{ fichier.nom }}<br></span>
+              <listeFichiers :fichiers="newInstance.fichiers"></listeFichiers>
               <in-file @add="ajoutFichierInstance($event, newInstance)"></in-file>
             </td>
             <td class="txt-center">
@@ -69,9 +69,10 @@ import inLongText from "../elements/inLongText";
 import inNumber from "../elements/inNumber";
 import inText from "../elements/inText";
 import inFile from "../elements/inFile";
+import listeFichiers from "../elements/listeFichiers";
 
 export default {
-  components: { inLongText, inNumber, inText, inFile },
+  components: { inLongText, inNumber, inText, inFile, listeFichiers },
   data () {
     return {
       newInstance : { nom: "", dates: "", commentaires: "", fichiers: [] }
@@ -89,12 +90,10 @@ export default {
       this.newInstance = { nom: "", dates: "", commentaires: "" }
     },
     ajoutFichierInstance (fichier, instance) {
-      console.log(instance)
       if (typeof instance.fichiers === 'undefined') {
         instance.fichiers = []
       }
       instance.fichiers.push(fichier)
-      console.log(fichier)
     }
   }
 };

@@ -24,6 +24,7 @@ a {
 .txt-center { text-align: center;}
 
 .txt-red { color: $CR39; &:hover {  color: $CR39; } }
+.txt-green { color: $CG17; &:hover {  color: $CG17; } }
 .txt-white { color: #fff; &:hover {  color: #fff; } }
 .bg-red { background-color: $CR39; &:hover {  background-color: $CR39; } }
 .txt-grey { color: $CN6; }
@@ -42,6 +43,8 @@ a {
 .h30p { height: 30px; }
 .h45p { height: 45px; }
 
+.pt10 { padding-top: 10px; }
+.pb10 { padding-bottom: 10px; }
 .pt20 { padding-top: 20px; }
 .pb20 { padding-bottom: 20px; }
 .pl10 { padding-left: 10px; }
@@ -62,6 +65,29 @@ a {
 
 .pointer { cursor: pointer; }
 
+a.inactive {
+  color: #999;
+  pointer-events: none;
+  cursor: inherit;
+}
+
+.pdf-container {
+  position: fixed;
+  top:0;
+  left: 0;
+  z-index: 5000;
+  background-color: rgba(0,0,0,0.8);
+  width: 100%;
+  height: 100%;
+  text-align: center;
+
+  iframe {
+    max-width: 1024px;;
+    width: 100%;
+    height: 100%;
+  }
+}
+
 .round-button {
   font-size: 12px;
   display: inline-block;
@@ -71,7 +97,7 @@ a {
     font-size: 20px;
     font-weight: 100;
     text-align: center;
-    padding: 8px 0;
+    padding: 9px 1px;
     border-radius: 50%;
     display: inline-block;
     width: 40px;
@@ -81,6 +107,13 @@ a {
   
   &:hover {
     text-decoration: none;
+  }
+
+  &.inactive {
+    pointer-events: none;
+    cursor: default;
+    i { background-color: $CN3 !important; }
+    color: $CN3 !important;
   }
 
   &.blue {

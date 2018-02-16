@@ -62,9 +62,8 @@ export default {
   },
   mounted () {
     var me = this, i
-    this.$store.state.server.call (C.LISTE_PROJETS, function (data) {
+    this.$$ServerCall (C.LISTE_PROJETS, function (data) {
       for (i = 0; i < data[C.LISTE_PROJETS].length; i += 1) {
-        //console.log(projet)
         data[C.LISTE_PROJETS][i].fin = data[C.LISTE_PROJETS][i].fin ? moment(data[C.LISTE_PROJETS][i].fin, "YYYY-MM-DD") : moment()
         data[C.LISTE_PROJETS][i].finPrev = data[C.LISTE_PROJETS][i].finPrev ? moment(data[C.LISTE_PROJETS][i].finPrev, "YYYY-MM-DD") : moment()
       }
