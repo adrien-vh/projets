@@ -65,9 +65,15 @@ class Bdd {
 	}
 
 	public function listeProjets () {
+		$listeNumProjet = array();
+		foreach ($_SESSION[DROITS_PROJETS] as $droit) {
+			$listeNumProjet[] = $droit->num_projet;
+		}
+
 		$projets = $this->arrayFromRequete("SELECT p2.num_projet, p2.nom, p2.chefProjet, p2.budgetPrev, p2.brouillon, p2.num_direction, p2.num_axe
 			FROM projet p1, projet p2
 			WHERE p1.num_projet <> 0 
+				AND p1.num_projet IN (-1,".implode(',', $listeNumProjet).")
 				AND p2.num_projetInitial = p1.num_projet 
 				AND p2.`version` = (
 					SELECT MAX(`version`) 
@@ -131,27 +137,27 @@ class Bdd {
 		return $num_projet;
 	}
 
-	public function sauveInstances($_instances, $_num_projet) {
+	public function sauveInstances($_instances, $_num_etape) {
 		foreach($_instances as $instance) {
 			$fichiers = array();
-			if (isset($instance['fichiers'])) {
-				$fichiers = $instance['fichiers'];
-				unset($instance['fichiers']);
-			}
+
 			if (isset($instance['num_instance'])) {		
 				$this->updateFromObject($instance, "instance", "num_instance", $instance['num_instance']);
 			} else {
-				$instance['num_projet'] = $_num_projet;
+				$instance['num_etape'] = $_num_etape;
 				$instance['num_instance'] = $this->insertObject($instance, "instance");
 			}
-			foreach($fichiers as $fichier) {
-				$this->execRequete(
-					"INSERT IGNORE INTO fichier_instance (num_fichier, num_instance) VALUES (:num_fichier, :num_instance)",
-					array(
-						':num_fichier' => $fichier,
-						':num_instance' => $instance['num_instance']
-					)
-				);
+
+			if (isset($instance['fichiers'])) {
+				foreach($instance['fichiers'] as $fichier) {
+					$this->execRequete(
+						"INSERT IGNORE INTO fichier_instance (num_fichier, num_instance) VALUES (:num_fichier, :num_instance)",
+						array(
+							':num_fichier' => $fichier,
+							':num_instance' => $instance['num_instance']
+						)
+					);
+				}
 			}
 		}
 	}
@@ -167,6 +173,20 @@ class Bdd {
 		}
 	}
 
+	public function sauveDroits($_droits, $_num_projet) {
+		$num_projetInitial = $this->num_projetInitial($_num_projet);
+
+		$this->execRequete(
+			"DELETE FROM droit WHERE num_projet IN ( SELECT num_projet FROM projet WHERE num_projetInitial = :num_projetInitial)",
+			array( ":num_projetInitial" => $num_projetInitial )
+		);
+
+		foreach($_droits as $droit) {
+			$droit['num_projet'] = $num_projetInitial;
+			$this->insertObject($droit, "droit");
+		}
+	}
+
 	public function sauveEtapes($_etapes, $_num_projet) {
 		$retour = [];
 		$nums_etape = array(-1);
@@ -174,15 +194,6 @@ class Bdd {
 		$retour[] = $_num_projet;
 	
 		foreach($_etapes as $etape) {
-			if (isset($etape['new'])) {
-				unset($etape['new']);
-			}
-			if (isset($etape['transactions'])) {
-				$transactions = $etape['transactions'];
-				unset($etape['transactions']);
-			} else {
-				$transactions = array();
-			}
 
 			if (isset($etape['num_etape'])) {
 				$num_etape = $etape['num_etape'];
@@ -205,8 +216,15 @@ class Bdd {
 				$num_etape = $this->insertObject($etape, "etape");
 				$nums_etape[] = $num_etape;
 			}
-			foreach($transactions as $transaction) {
-				$this->sauveTransaction($transaction, $num_etape);
+
+			if (isset($etape[INSTANCES])) {
+				$this->sauveInstances($etape[INSTANCES], $num_etape);
+			}
+
+			if (isset($etape['transactions'])) {
+				foreach($etape['transactions'] as $transaction) {
+					$this->sauveTransaction($transaction, $num_etape);
+				}
 			}
 		}
 
@@ -255,12 +273,10 @@ class Bdd {
 		);
 	}
 
-	public function chargeInstances($_num_projet) {
-		$num_projetInitial = $this->num_projetInitial($_num_projet);
-		//return $num_projetInitial;
+	public function chargeInstances($_num_etape) {
 		$instances = $this->arrayFromRequete(
-			"SELECT * FROM instance WHERE num_projet IN ( SELECT num_projet FROM projet WHERE num_projetInitial = :num_projetInitial)",
-			array (":num_projetInitial" => $num_projetInitial)
+			"SELECT * FROM instance WHERE num_etape = :num_etape",
+			array (":num_etape" => $_num_etape)
 		);
 
 		foreach($instances as $instance) {
@@ -315,9 +331,11 @@ class Bdd {
 	}
 
 	public function droits ($_num_projet) {
+		$num_projetInitial = $this->num_projetInitial($_num_projet);
+
 		return $this->arrayFromRequete(
-			"SELECT * FROM droit WHERE num_projet = :num_projet",
-			array( ":num_projet" => $_num_projet )
+			"SELECT * FROM droit WHERE num_projet IN ( SELECT num_projet FROM projet WHERE num_projetInitial = :num_projetInitial)",
+			array( ":num_projetInitial" => $num_projetInitial )
 		);
 	}
 
@@ -386,6 +404,15 @@ class Bdd {
 		return $num_projet;
 	}
 
+	public function droitsParUtilisateur($_login) {
+		return $this->arrayFromRequete(
+			"SELECT IFNULL((SELECT p.num_projetInitial FROM projet p WHERE p.num_projet = d.num_projet), -1) AS num_projet, d.niveau FROM droit d WHERE d.login = :login
+			UNION
+			SELECT IFNULL((SELECT p.num_projetInitial FROM projet p WHERE p.num_projet = pr.num_projet), -1), 2 AS niveau FROM projet pr WHERE pr.chefProjet = :login OR pr.createur = :login",
+			array( ":login" => $_login )
+		);
+	}
+
 	public function infosFichier($_num_fichier) {
 		$retour = $this->objFromRequete(
 			"SELECT * FROM fichier WHERE num_fichier = :num_fichier",
@@ -401,7 +428,7 @@ class Bdd {
 		return $retour;
 	}
 	
-	private function num_projetInitial ($_num_projet) {
+	public function num_projetInitial ($_num_projet) {
 		return intval($this->varFromRequete(
 			"SELECT num_projetInitial FROM projet WHERE num_projet = :num_projet",
 			array ( ':num_projet' => $_num_projet )

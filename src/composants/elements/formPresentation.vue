@@ -104,7 +104,6 @@
 
         methods: {
             setChefProjet (utilisateur) {
-                console.log(utilisateur)
             }
         }
     }

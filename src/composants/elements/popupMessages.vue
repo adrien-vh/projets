@@ -1,11 +1,11 @@
 <template>
   <div id="popupMessage" :class="{ active: $store.state.messages.length > 0 }">
-    <div v-for="message in $store.state.messages">
-      <i class="fa fa-check fa-3x" aria-hidden="true" v-if="message.type === 'success'"></i>
-      <i class="fa fa-info fa-3x" aria-hidden="true" v-if="message.type === 'info'"></i>
-      <i class="fa fa-times fa-3x" aria-hidden="true" v-if="message.type === 'error'"></i>
+    <div v-for="m in $store.state.messages.length" :key="m">
+      <i class="fa fa-check fa-3x" aria-hidden="true" v-if="$store.state.messages[m-1].type === 'success'"></i>
+      <i class="fa fa-info fa-3x" aria-hidden="true" v-if="$store.state.messages[m-1].type === 'info'"></i>
+      <i class="fa fa-times fa-3x" aria-hidden="true" v-if="$store.state.messages[m-1].type === 'error'"></i>
       <br>
-      {{message.text}}
+      {{$store.state.messages[m-1].text}}
     </div>
   </div>
 </template>

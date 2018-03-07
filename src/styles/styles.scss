@@ -36,6 +36,7 @@ a {
 .w20p { width: 20px; }
 .w50p { width: 50px; }
 .w100p { width: 100px; }
+.w150p { width: 150px; }
 .w350p { width: 350px; }
 .w400p { width: 400px; }
 
@@ -69,6 +70,20 @@ a.inactive {
   color: #999;
   pointer-events: none;
   cursor: inherit;
+}
+
+
+.titre-page {
+  font-family: ibm-plex-serif;
+  z-index: 350;
+  position: fixed;
+  color: #fff;
+  top: 2px;
+  left: 50%;
+  margin-left: -150px;
+  font-size: 25px;
+  width: 300px;
+  text-align: center;
 }
 
 .pdf-container {

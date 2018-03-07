@@ -13,6 +13,27 @@
                 this.$store.state.modale.onConfirm = onConfirm
                 $('#modaleGlobale').modal()
             },
+            $userName (login) {
+                var i
+                for (i = 0; i < this.$store.state.utilisateurs.length; i += 1) {
+                    if (this.$store.state.utilisateurs[i].login === login) {
+                        return this.$store.state.utilisateurs[i].nom
+                    }
+                }
+                return login
+            },
+            $niveauAcces (num_projet) {
+                var i, num_projet = parseInt(num_projet)
+                
+                if (this.$store.state.user.connecte) {
+                    for (i = 0; i < this.$store.state.user.droitsProjets.length; i += 1) {
+                        if (parseInt(this.$store.state.user.droitsProjets[i].num_projet) == num_projet) {
+                            return parseInt(this.$store.state.user.droitsProjets[i].niveau)
+                        }
+                    }
+                }
+                return -1
+            },
             $stringify (element) {
                 var i, prop
 

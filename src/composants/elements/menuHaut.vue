@@ -1,14 +1,14 @@
 <template>
   <div id="menuHaut">
     <ul>
-      <li><router-link to="/accueil" id="menuLogo">p<span>ro</span>j<span>ets</span></router-link></li>
-      <li><router-link to="/accueil" :class="{ active: $route.name === 'accueil' }">Accueil</router-link></li>
-      <li><router-link to="/projet" :class="{ active: $route.name === 'projet' }">Projet</router-link></li>
-      <li><router-link to="/login">Configuration</router-link></li>
+      <!--<li><router-link to="/accueil" id="menuLogo">p<span>ro</span>j<span>ets</span></router-link></li>-->
+      <li><router-link to="/accueil" :class="{ active: $route.name === 'accueil' }"><i class="fa fa-home fa-2x" aria-hidden="true"></i></router-link></li>
+     <!-- <li><router-link to="/projet" :class="{ active: $route.name === 'projet' }">Projet</router-link></li>-->
+      <!--<li><router-link to="/login">Configuration</router-link></li>-->
     </ul>
     <div id="connectionInfos">
-      <i class="fa fa-lg fa-user-circle" aria-hidden="true"></i> {{ $store.state.user.fullName }}
-      <a href="#" @click.prevent="$store.commit('logout')">Déconnexion</a>
+      {{ $store.state.user.fullName }}<br>
+      <a href="#" @click.prevent="$$logout()">Déconnexion</a>
     </div>
   </div>
 </template>
@@ -74,11 +74,17 @@ export default { }
       }
     }
     #connectionInfos {
-      display: inline-block;
-      width: 295px;
+      display: block;
+      position: fixed;
+      bottom: 20px;
+      left: 20px;
+      width: auto;
+      padding: 5px 15px;
+      border-radius: 10px;
       text-align: center;
       background-color: $userBGColor;
-      height: $menuHeight;
+      height: auto;
+      box-shadow: 0 4px 8px 0 rgba(0, 0, 0, 0.2), 0 6px 20px 0 rgba(0, 0, 0, 0.19);
       
       color: #fff;
       padding-top: 5px;
@@ -90,9 +96,7 @@ export default { }
       a {
         color: #fff;
         text-decoration: underline;
-        font-size: 12px;
-        margin-left: 15px;
-        
+        font-size: 12px;        
       }
     }
   }

@@ -9,9 +9,12 @@
 	define('AXES', 						'axes');
 	define('CHARGE_PROJET', 	'chargeProjet');
 	define('CONSTANTS', 			'constants');
+	define('CONNECTE', 				'connecte');
 	define('CREER_VERSION', 	'creerVersion');
 	define('DIRECTIONS',		 	'directions');
+	define('DEBUG',		 				'DEBUG');
 	define('DROITS',		 			'droits');
+	define('DROITS_PROJETS',	'droitsProjets');
 	define('ERROR', 					'error');
 	define('ETAPES', 					'etapes');
 	define('EXTENSION',				'ext');
@@ -24,6 +27,7 @@
 	define('IS_LAST_VERSION', 'isLastVersion');
 	define('LISTE_PROJETS',		'listeProjets');
 	define('LOGIN', 					'login');
+	define('LOGOUT', 					'logout');
 	define('MESSAGES',				'messages');
 	define('NOM_FICHIER', 		'nom_fichier');
 	define('NOM_FICHIER_FS', 	'nom_fichier_fs');
@@ -33,6 +37,7 @@
 	define('PRECEDENT', 			'precedent');
 	define('PROJET', 					'projet');
 	define('SAUVE_PROJET', 		'sauveProjet');
+	define('SESSION_USER', 		'sessionUser');
 	define('SOUS_AXES', 			'sousAxes');
 	define('SUCCESS',			 		'success');
 	define('SUIVANT',			 		'suivant');

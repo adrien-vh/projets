@@ -1,5 +1,9 @@
 <?php
+if (strstr($_SERVER['HTTP_ORIGIN'], 'localhost')) {
+	session_id(substr(base64_encode($_SERVER['REMOTE_ADDR']), 0, 6));
+}
 session_start();
+
 
 if (isset($_SERVER['HTTP_ORIGIN'])) {
 	header('Access-Control-Allow-Origin:  '.$_SERVER['HTTP_ORIGIN']);
@@ -29,10 +33,12 @@ require_once('includes/class.bdd.php');
 require_once('includes/class.user.php');
 
 
-$params 					= explode('/', $_GET[ACTION]);
-$retour 					= array();
-$retour[MESSAGES]	= array();
-$action 					= array_shift($params);
+$params 								= explode('/', $_GET[ACTION]);
+$retour 								= array();
+$retour[MESSAGES]				= array();
+$retour[INFOS_FICHIERS] = array();
+$action 								= array_shift($params);
+$retour["ORIGIN"]				= $_SERVER['HTTP_ORIGIN'];
 
 $bdd				= new Bdd();
 $user				= new User($bdd);
@@ -40,8 +46,14 @@ $user				= new User($bdd);
 switch ($action) {
 	
 	case IPUSER :
-		$user->loadInfosFromIp();
-		$retour[USER] = $user->toPublicObject();
+		if ($_SESSION[CONNECTE]) {
+			$user->rechargeDroits();
+			$retour[USER] = $user->toPublicObject();
+		} else {
+			$user->loadInfosFromIp();
+			$retour[IPUSER] = $user->toPublicObject();
+			$retour[USER] 	= $user->toPublicObject();
+		}
 		break;
 		
 	case LOGIN :
@@ -52,6 +64,10 @@ switch ($action) {
 		} else {
 			$retour[MESSAGES][] = array( type => ERROR, text => "Erreur d'authentification" );
 		}
+		break;
+	
+	case LOGOUT :
+		$_SESSION[CONNECTE] = false;
 		break;
 	
 	case CONSTANTS :
@@ -65,45 +81,71 @@ switch ($action) {
 		break;
 
 	case SAUVE_PROJET :
-		$_POST[INSTANCES] = isset($_POST[INSTANCES]) ? $_POST[INSTANCES] : array();
-
-		$retour[NUM_PROJET] = $bdd->sauveProjet($_POST[PROJET], $_POST[NUM_PROJET]);
-		$bdd->sauveInstances($_POST[INSTANCES] ,$retour[NUM_PROJET]);
-		$bdd->sauveFinancement($_POST[PROJET][FINANCEMENT] ,$retour[NUM_PROJET]);
-		$retour[ETAPES] = $bdd->sauveEtapes($_POST[PROJET][ETAPES] ,$retour[NUM_PROJET]);
-
-		if ($_POST[VALIDE_PROJET] == '1') {
-			$bdd->valideProjet($retour[NUM_PROJET]);
-		}
-
-		if (count($bdd->getDbg()) == 0) {
-			$retour[MESSAGES][] = array( type => SUCCESS, text => "Sauvegarde réussie !" );
+		$user->rechargeDroits();
+		if ($user->niveauDroit($_POST[NUM_PROJET]) < 1) {
+			$retour[MESSAGES][] = array( type => ERROR, text => "Vous n'avez pas le de modifier ce projet" );
 		} else {
-			$retour[MESSAGES][] = array( type => ERROR, text => "Échec de la sauvegarde. (".$bdd->getDbg()[0][2].")" );
-		}
+			$_POST[PROJET][FINANCEMENT] = isset($_POST[PROJET][FINANCEMENT]) ? $_POST[PROJET][FINANCEMENT] : array();
+			$_POST[PROJET][DROITS] = isset($_POST[PROJET][DROITS]) ? $_POST[PROJET][DROITS] : array();
+			$_POST[PROJET][ETAPES] = isset($_POST[PROJET][ETAPES]) ? $_POST[PROJET][ETAPES] : array();
 
+			if (intval($_POST[PROJET]->num_projetInitial) == 0) {
+				$_POST[PROJET]['createur'] = $_SESSION[LOGIN];
+			}
+
+			$retour[NUM_PROJET] = $bdd->sauveProjet($_POST[PROJET], $_POST[NUM_PROJET]);
+			
+			$bdd->sauveFinancement($_POST[PROJET][FINANCEMENT] ,$retour[NUM_PROJET]);
+			$bdd->sauveDroits($_POST[PROJET][DROITS], $retour[NUM_PROJET]);
+			$retour[ETAPES] = $bdd->sauveEtapes($_POST[PROJET][ETAPES] ,$retour[NUM_PROJET]);
+
+			if ($_POST[VALIDE_PROJET] == '1') {
+				$bdd->valideProjet($retour[NUM_PROJET]);
+			}
+
+			if (count($bdd->getDbg()) == 0) {
+				$retour[MESSAGES][] = array( type => SUCCESS, text => "Sauvegarde réussie !" );
+			} else {
+				$retour[MESSAGES][] = array( type => ERROR, text => "Échec de la sauvegarde. (".$bdd->getDbg()[0][2].")" );
+			}
+		}
 		break;
 
 	case CHARGE_PROJET :
-		$retour[PROJET] = $bdd->chargeProjet($_POST[NUM_PROJET]);
-		$retour[INSTANCES] = $bdd->chargeInstances($_POST[NUM_PROJET]);
-		$retour[PROJET]->{FINANCEMENT} = $bdd->chargeFinancements($_POST[NUM_PROJET]);
-		$retour[PROJET]->{ETAPES} = $bdd->chargeEtapes($_POST[NUM_PROJET]);
-		$retour[IS_LAST_VERSION] = $bdd->isLastVersion($_POST[NUM_PROJET]);
-		$retour[PRECEDENT] = $bdd->num_projetPrecedent($_POST[NUM_PROJET]);
-		$retour[SUIVANT] = $bdd->num_projetSuivant($_POST[NUM_PROJET]);
-		$retour[PROJET]->{DROITS} = $bdd->droits($_POST[NUM_PROJET]);
+		$user->rechargeDroits();
+		if ($user->niveauDroit($_POST[NUM_PROJET]) < 0) {
+			$retour[MESSAGES][] = array( type => ERROR, text => "Vous n'avez pas accès à ce projet" );
+		} else {
+			$retour[PROJET] = $bdd->chargeProjet($_POST[NUM_PROJET]);
+			$retour[INSTANCES] = $bdd->chargeInstances($_POST[NUM_PROJET]);
+			$retour[PROJET]->{FINANCEMENT} = $bdd->chargeFinancements($_POST[NUM_PROJET]);
+			$retour[PROJET]->{ETAPES} = $bdd->chargeEtapes($_POST[NUM_PROJET]);
 
-		$retour[INFOS_FICHIERS] = array();
-		foreach ($retour[PROJET]->{ETAPES} as $etape) {
-			if (intval($etape->validationFichier) != -1) {
-				$retour[INFOS_FICHIERS][] = $bdd->infosFichier($etape->validationFichier);
+			foreach ($retour[PROJET]->{ETAPES} as $etape) {
+				$etape->{INSTANCES} = $bdd->chargeInstances($etape->num_etape);
+
+				foreach ($etape->{INSTANCES} as $instance) {
+					foreach ($instance->fichiers as $fichier){
+						$retour[INFOS_FICHIERS][] = $bdd->infosFichier($fichier);
+					}
+				}
 			}
-		}
 
-		foreach ($retour[INSTANCES] as $instance) {
-			foreach ($instance->fichiers as $fichier){
-				$retour[INFOS_FICHIERS][] = $bdd->infosFichier($fichier);
+			$retour[IS_LAST_VERSION] = $bdd->isLastVersion($_POST[NUM_PROJET]);
+			$retour[PRECEDENT] = $bdd->num_projetPrecedent($_POST[NUM_PROJET]);
+			$retour[SUIVANT] = $bdd->num_projetSuivant($_POST[NUM_PROJET]);
+			if (intval($_POST[NUM_PROJET]) != 0) {
+				$retour[PROJET]->{DROITS} = $bdd->droits($_POST[NUM_PROJET]);
+			} else {
+				$retour[PROJET]->{DROITS} = array();
+			}
+
+			
+			foreach ($retour[PROJET]->{ETAPES} as $etape) {
+				if (intval($etape->validationFichier) != -1) {
+					$retour[INFOS_FICHIERS][] = $bdd->infosFichier($etape->validationFichier);
+				}
+
 			}
 		}
 
@@ -170,6 +212,7 @@ switch ($action) {
 		break;
 }
 
-$retour["DEBUG"] = $bdd->getDbg();
+$retour[DEBUG] = $bdd->getDbg();
+$retour['SESSION'] = $_SESSION;
 
 die(json_encode($retour));

@@ -15,18 +15,20 @@
         <thead class="">
           <tr>
             <th class="w20p"></th>
-            <th class="w350p">Étape</th>
+            <th class="w20p"></th>
+            <th>Étape</th>
             <!--<th>Commentaires</th>-->
-            <th>Début</th>
+            <th class="w100p">Début</th>
             <th>Fin</th>
-            <th>Durée</th>
-            <th class="w100p">Type</th>
-            <th v-show="editable"></th>
+            <th class="w100p">Durée</th>
+            <th class="w150p">Type</th>
+            <th class="w50p" v-show="editable"></th>
           </tr>
         </thead>
         <tbody>
           <tr v-for="m in etapes.length" :key="m">
             <td class="txt-center"><a href="#" @click.prevent="selectStep(etapes[m-1])"><i class="fa fa-eye fa-lg" aria-hidden="true"></i></a></td>
+            <td><i class="fa fa-check fa-lg txt-green" aria-hidden="true" v-show="etapes[m-1].validationFichier != '-1'"></i></td>
             <td><inText v-model="etapes[m-1].nom" :editable="editable"></inText></td>
             <!--<td>{{ etapes[m-1].description }}</td>-->
             <td><inMonth v-model="etapes[m-1].debut" :editable="editable" @input="updateGanttDiag"></inMonth></td>
@@ -53,6 +55,7 @@
             </td>
           </tr>
           <tr v-show="editable">
+            <td></td>
             <td></td>
             <td><inText v-model="newStep.nom" :editable="editable"></inText></td>
             <td><inMonth v-model="newStep.debut" :editable="editable"></inMonth></td>

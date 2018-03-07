@@ -1,10 +1,10 @@
 <template>
   <div id="app">
-    <menuHaut v-show="$store.state.user.connected"></menuHaut>
-    <div id="routerView" v-show="$store.state.user.connected">
+    <menuHaut v-show="$store.state.user.connecte"></menuHaut>
+    <div id="routerView" v-show="$store.state.user.connecte">
       <router-view></router-view>
     </div>
-    <loginForm v-show="!$store.state.user.connected"></loginForm>
+    <loginForm v-show="!$store.state.user.connecte"></loginForm>
 
     <popupMessages></popupMessages>
     <div class="modal fade" id="modaleGlobale" tabindex="-1" role="dialog" aria-hidden="true" :class="{grande : $store.state.modale.grande}">
@@ -44,7 +44,7 @@
 
   #routerView {
     margin-top: 50px;
-    padding: 0 0px;
+    padding: 0 0px 250px;
   }
 
   #modaleGlobale {

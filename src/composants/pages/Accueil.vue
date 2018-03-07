@@ -1,5 +1,6 @@
 <template>
   <div id="pageAccueil">
+    <div class="titre-page">Accueil</div>
     <!--<div id="contBouton">
       <a href="#" class="fs-18" @click.prevent="newProject"><i class="fa fa-plus" aria-hidden="true"></i> Nouveau projet</a>
     </div>-->
@@ -17,7 +18,7 @@
     </div>
     <!--<h2>Projets en cours</h2>-->
     <div class="cards-container">
-      <div class="project-card pointer card hvr-pop" @click="newProject">
+      <div class="project-card pointer card hvr-pop" @click="newProject" v-show="$niveauAcces(0) > 0">
         
         <div class="nom"><div>NOUVEAU PROJET</div></div>
         <img src="../../assets/images/plus_116.png">
@@ -36,7 +37,7 @@
         <div class="fin">{{ $formatDate(projet.fin) }}</div>
         <div>{{ projet.budgetPrev }}<span v-if="projet.budgetPrev > 0"> 000</span> €</div>
         <div class="fs-12 mt10 txt-grey h45p oh pr15 pl15" v-for="direction in $store.state.directions" :key="direction.num_direction" v-if="direction.num_direction == projet.num_direction">{{ direction.nom }}</div>
-        <div class="fs-12">{{ projet.chefProjet }}&nbsp;</div>
+        <div class="fs-12">{{ $userName(projet.chefProjet) }}&nbsp;</div>
       </div>
     </div>
   </div>

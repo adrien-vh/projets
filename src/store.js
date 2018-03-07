@@ -1,18 +1,28 @@
+/* STORE */
+
 import Vue from 'vue'
 
 Vue.use(Vuex)
 
 export default new Vuex.Store ({
   state : {
+
+    // Utilisateur en cours
     user : {
       login : null,
-      connected : false,
-      fullName : null
+      connecte : false,
+      fullName : null,
+      droitsProjets: []
     },
+
+    // Utilisateur correspondant à l'IP du poste client
     ipUser : {
       login: null,
-      fullName: null
+      fullName: null,
+      droitsProjets: []
     },
+
+    // Contenu de la fenêtre modale
     modale: {
       titre: "",
       contenu: "",
@@ -20,26 +30,33 @@ export default new Vuex.Store ({
       confirmation: false,
       onConfirm: function () {}
     },
+
+    // Contenus des listes à choix multiple
     typesEtapes: [],
     axes: [],
     sousAxes: [],
     directions: [],
-    messages : [],
     utilisateurs: [],
-    infosFichiers: [],
     niveauxDroits: [
       { niveau: 0, label: "lecture seule" },
       { niveau: 1, label: "lecture / écriture" },
       { niveau: 2, label: "lecture / écriture / validation" }
-    ]
+    ],
+
+    // Messages affichés au retour serveur
+    messages : [],
+    
+    // Informations sur les fichiers chargés
+    infosFichiers: []
+    
   },
   mutations: {
     logout (state) {
-      state.user.connected = false
+      state.user.connecte = false
     },
     setUser (state, user) {
       $.extend(state.user, user)
-      state.user.connected = state.user.login ? true : false
+      state.user.connecte = state.user.connecte
     },
     setIpUser (state, user) {
       $.extend(state.ipUser, user)
@@ -47,7 +64,7 @@ export default new Vuex.Store ({
     ipLogin (state) {
       if (state.ipUser.login) {
         $.extend(state.user, state.ipUser)
-        state.user.connected = true
+        state.user.connecte = true
       }
     },
     setTypesEtapes (state, typesEtapes) {
@@ -67,9 +84,13 @@ export default new Vuex.Store ({
     },
     addInfoFichier (state, infoFichier) {
       state.infosFichiers[parseInt(infoFichier.num_fichier)] = infoFichier
+    },
+    ajouteDroit (state, droit) {
+      state.user.droitsProjets.push(droit)
     }
   },
   actions: {
+    // Affichage d'un message au retour serveur
     displayMessage (context, message) {
       context.state.messages.push(message)
       setTimeout(

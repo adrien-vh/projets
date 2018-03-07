@@ -1,6 +1,11 @@
 <template>
   <div id="projet">
-    <nav>
+    <div class="titre-page">{{ projet.nom }}</div>
+    <div class="alert alert-danger txt-center fs-18" role="alert"  v-show="niveauAcces < 0">
+      <i aria-hidden="true" class="fa fa-warning fa-5x"></i><br>
+      Vous n'avez pas accès à ce projet !
+    </div>
+    <nav v-show="niveauAcces >= 0">
       <!-- MENU -->
       <span v-show="!isLastVersion" class="fs-14 txt-white w100 txt-center ib bg-red pt20 pb20 br10 mb10">
         <i class="fa fa-exclamation-triangle fa-2x" aria-hidden="true"></i><br>
@@ -38,7 +43,7 @@
           <i class="fa fa-floppy-o" aria-hidden="true"></i> Enregistrer
         </a>
 
-        <a href="#" class="round-button blue" @click.prevent="editing = true; unsaved = false" v-show="!editing && projet.brouillon == '1'">
+        <a href="#" class="round-button blue" @click.prevent="editing = true; unsaved = false" v-show="!editing && projet.brouillon == '1' && niveauAcces > 0">
           <i class="fa fa-pencil" aria-hidden="true"></i> Éditer
         </a>
 
@@ -46,7 +51,7 @@
           <i class="fa fa-star" aria-hidden="true"></i> Nouvelle version
         </a>
 
-        <a href="#" class="round-button green" v-show="projet.brouillon == '1'" @click.prevent="valideProjet">
+        <a href="#" class="round-button green" v-show="projet.brouillon == '1' && niveauAcces > 1" @click.prevent="valideProjet">
           <i class="fa fa-check" aria-hidden="true"></i> Valider
         </a>
         
@@ -58,24 +63,22 @@
         Non enregistré !
       </span>
     </nav>
-    <div class="contenu">
+    <div class="contenu" v-show="niveauAcces >= 0">
 
-      <h2 v-show="!editing">{{ projet.nom }}</h2>
+      <!--<h2 v-show="!editing">{{ projet.nom }}</h2>-->
       
       <table class="form" v-show="editing">
         <tr><th>Nom du projet :</th></tr>
         <tr><td><inText v-model="projet.nom" :editable="editing"></inText></td></tr>
       </table>
 
-      
-      <h5 id="droits" class="part">Droits d'accès</h5>
-      <listeDroits :projet="projet" :editable="editing"></listeDroits>
+
 
       <h5 id="fiche" class="part">Présentation du projet</h5>
       <formPresentation :projet="projet" :editable="editing"></formPresentation>
 
       <h5 id="analyse" class="part">Présentation détaillée du projet</h5>
-      <formPresentationD :projet="projet" :instances="instances" :editable="editing" :numProjet="num_projet"></formPresentationD>      
+      <formPresentationD :projet="projet" :editable="editing" :numProjet="num_projet"></formPresentationD>      
       
       <h5 id="financement" class="part">Financement :</h5>
       <listeFinancements :projet="projet" :editable="editing"></listeFinancements>
@@ -95,6 +98,9 @@
       <h5 id="fiches" class="part" v-if="etapeCourante !== null">Phase : {{ etapeCourante.nom }}</h5>
       <ficheEtape :projet="projet" :etape="etapeCourante" :editable="editing" v-if="etapeCourante != null"></ficheEtape>
 
+            
+      <h5 id="droits" class="part">Droits d'accès</h5>
+      <listeDroits :projet="projet" :editable="editing"></listeDroits>
 
     </div>
     <!--<div class="pdf-container">
@@ -116,8 +122,7 @@
   import ficheEtape from '../elements/ficheEtape'
   import formCalendrier from '../elements/formCalendrier'
   import listeFinancements from '../elements/listeFinancements'
-  import listeDroits from '../elements/listeDroits'
-  
+  import listeDroits from '../elements/listeDroits'  
     
   export default {
     components: { inLongText, gantt, inNumber, inDuration, inText, inDate, inMonth, formPresentation, formPresentationD, ficheEtape, formCalendrier, listeFinancements, listeDroits },
@@ -134,19 +139,14 @@
       projet: {
         handler () { this.unsaved = true },
         deep: true
-      },
-      instances: {
-        handler () { this.unsaved = true },
-        deep: true
-      },
+      }
     },
     data () {
       return {
         editing: true,
         activePart: "fiche",
-        projet: { etapes: [] },
+        projet: { etapes: [], droits: [], num_projetInitial: 0 },
         isLastVersion: true,
-        instances: [],
         etapeCourante: null,
         num_projetPrec: null,
         num_projetSuiv: null,
@@ -161,6 +161,9 @@
       },
       indexEtapeCourante () {
         return this.etapes.indexOf(this.etapeCourante)
+      },
+      niveauAcces () {
+        return this.$niveauAcces(this.projet.num_projetInitial)
       }
     },
     methods: {
@@ -185,39 +188,20 @@
         }, donnees)
           
       },
-      /*formattedSteps () {
-        var retour = [], tmp, i, j
-        for (j=0; j < this.etapes.length; j += 1) {
-          tmp = $.extend(true, {}, this.etapes[j])
-          tmp.debut = tmp.debut.format("YYYY-MM-DD")
-          if (tmp.debutInitial) {
-            tmp.debutInitial = tmp.debutInitial.format("YYYY-MM-DD")
-          }
-          tmp.duree = tmp.duree.asMonths()
-          if (tmp.dureeInitial) {
-            tmp.dureeInitial = tmp.dureeInitial ? "1" : tmp.dureeInitial.asMonths()
-          }
-          if (tmp.transactions) {
-            
-            for (i = 0; i < tmp.transactions.length; i += 1) {
-              tmp.transactions[i].date = tmp.transactions[i].date.format("YYYY-MM-DD")
-            }
-          }
-          retour.push(tmp)
-        }
-        return retour
-      },*/
       sauveProjet (validate) {
         var donnees = {}, me = this
 
         donnees[C.PROJET] = this.$stringify($.extend(true, {}, this.projet))
         donnees[C.NUM_PROJET] = this.num_projet
-        donnees[C.INSTANCES] = this.instances
         donnees[C.VALIDE_PROJET] = validate ? '1' : '0'
 
         this.$$ServerCall (C.SAUVE_PROJET, function (data) {
           me.unsaved = false
           me.editing = !validate
+          me.$store.commit('ajouteDroit', {
+            num_projet: data[C.NUM_PROJET],
+            niveau: 2
+          })
           if (parseFloat(me.num_projet) === 0) {
             me.$router.push("/projet/" + data[C.NUM_PROJET])
           }
@@ -229,46 +213,23 @@
       chargeProjet () {
         var donnees = {}, me = this, i, j
         donnees[C.NUM_PROJET] = this.num_projet
-        this.$$ServerCall (C.CHARGE_PROJET, function (data) {
-          
-          
 
+        this.$$ServerCall (C.CHARGE_PROJET, function (data) {
           delete data.projet.num_projet
           data.projet.budgetPrev = parseFloat(data.projet.budgetPrev)
           data.projet.dureePrev = parseFloat(data.projet.dureePrev)
           
-          me.isLastVersion = data[C.IS_LAST_VERSION]
-          me.instances = data[C.INSTANCES]
+          me.isLastVersion  = data[C.IS_LAST_VERSION]
           me.num_projetPrec = data[C.PRECEDENT]
           me.num_projetSuiv = data[C.SUIVANT]
-          
-
-          for (j = 0; j < data.projet[C.ETAPES].length; j += 1) {
-            
-            data.projet[C.ETAPES][j]['debut'] = moment(data.projet[C.ETAPES][j]['debut'], "YYYY-MM-DD")
-            data.projet[C.ETAPES][j]['debutInitial'] = moment(data.projet[C.ETAPES][j]['debutInitial'], "YYYY-MM-DD")
-            data.projet[C.ETAPES][j]['duree'] = moment.duration(parseFloat(data.projet[C.ETAPES][j]['duree']), "months")
-            data.projet[C.ETAPES][j]['dureeInitial'] = moment.duration(parseFloat(data.projet[C.ETAPES][j]['dureeInitial']), "months")
-            
-            
-            for (i = 0; i < data.projet[C.ETAPES][j]['transactions'].length; i += 1) {
-              data.projet[C.ETAPES][j]['transactions'][i]['date'] = moment(data.projet[C.ETAPES][j]['transactions'][i]['date'], "YYYY-MM-DD")
-              data.projet[C.ETAPES][j]['transactions'][i]['montant'] = parseFloat(data.projet[C.ETAPES][j]['transactions'][i]['montant'])
-            }
-          }
-
-          for (j = 0; j < data.projet[C.FINANCEMENT].length; j += 1) {
-            data.projet[C.FINANCEMENT][j].date = moment(data.projet[C.FINANCEMENT][j].date, "YYYY-MM-DD")
-            data.projet[C.FINANCEMENT][j].montant = parseFloat(data.projet[C.FINANCEMENT][j].montant)
-          }
-
-          me.projet = data[C.PROJET]
+          me.projet         = data[C.PROJET]
 
           me.financements = data.projet[C.FINANCEMENT]
+
           if (data.projet[C.ETAPES].length > 0) {
             me.etapeCourante = data.projet[C.ETAPES][0]
           }
-        }, donnees )
+        }, donnees, [this.transformTables.projet] )
       },
       valideProjet () {
         this.sauveProjet(true)
@@ -300,6 +261,8 @@
 
 <style lang="scss">
   @import "../../styles/copic";
+
+
   #projet {
     margin: 0 auto;
     max-width: 1050px;

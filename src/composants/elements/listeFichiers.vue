@@ -1,7 +1,7 @@
 <template>
   <div>
     <span v-for="num_fichier in fichiers" :key="num_fichier">
-      <itemFichier :numFichier="num_fichier" :editable="editable"></itemFichier>
+      <itemFichier :numFichier="num_fichier" :editable="editable" @supprime="supprime(num_fichier)"></itemFichier>
     </span>
   </div>
 </template>
@@ -18,7 +18,17 @@ export default {
     data () {
       return { }
     },
-    methods: { }
+    methods: {
+      supprime(num_fichier) {
+        var i
+        for (i = 0; i < this.fichiers.length; i += 1) {
+          if (this.fichiers[i]) {
+            this.fichiers.splice(i, 1)
+            return
+          }
+        }
+      }
+    }
 }
 </script>
 

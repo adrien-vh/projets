@@ -1,3 +1,5 @@
+/* ROUTER */
+
 import Accueil from './composants/pages/Accueil'
 import Projet from './composants/pages/Projet'
 import Vue from 'vue'

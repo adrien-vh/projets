@@ -91,7 +91,7 @@
     },
 
     watch: {
-      value () {  
+      value (v) {  
         this.type = this.getLabel()
         this.valid = this.type !== ''
       },
@@ -253,7 +253,8 @@
     },
     created(){
       // Sync parent model with initValue Props
-      //this.type = this.initValue ? this.initValue : null
+      this.type = this.getLabel()
+      this.valid = this.type !== ''
     },
     mounted() { }
 
@@ -267,6 +268,7 @@
 
     input {
       width: calc(100% - 40px);
+      background-color: transparent;
     }
 
     .autocomplete-list {

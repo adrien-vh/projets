@@ -1,5 +1,6 @@
 <template>
     <div class="fs-13">
+      <!-- Données standards de la phase -->
       <div class="serif fs-13 mt10 bold">Nom de la phase :</div>
       <inText v-model="etape.nom" :editable="editable"></inText>
       <table class="form">
@@ -26,6 +27,58 @@
       <div class="serif fs-13 mt10 bold">Commentaires :</div>
       <inLongText v-model="etape.commentaires" :editable="editable"></inLongText>
 
+      <!-- Étapes instances liées à la phase -->
+      <div class="serif fs-13 mt10 bold">Étapes / instances :</div>
+      <div v-show="!editable && etape.instances.length === 0" class="fs-12">(Aucun enregistrement)</div>
+      <table class="table table-hover table-sm table-striped infos" v-show="editable || etape.instances.length > 0">
+        <thead>
+          <tr>
+            <th>Étapes / instance</th>
+            <th>Dates</th>
+            <th>Commentaires</th>
+            <th>Fichiers</th>
+            <th v-show="editable"></th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr v-for="m in etape.instances.length" :key="m">
+            <td>
+                <inText v-model="etape.instances[m-1].nom" :editable="editable"></inText>
+            </td>
+            <td>
+              <inText v-model="etape.instances[m-1].dates" :editable="editable"></inText>
+            </td>
+            <td>
+              <inText v-model="etape.instances[m-1].commentaires" :editable="editable"></inText>
+            </td>
+            <td>
+              <listeFichiers :fichiers="etape.instances[m-1].fichiers" :editable="editable"></listeFichiers>
+              <in-file v-show="editable" @add="ajoutFichierInstance($event, etape.instances[m-1])"></in-file>
+            </td>
+            <td v-show="editable"><button class="btn btn-danger btn-sm pointer mb10">Supprimer</button></td>
+          </tr>
+          <tr v-show="editable">
+            <td>
+              <inText v-model="newInstance.nom" :editable="true"></inText>
+            </td>
+            <td>
+              <inText v-model="newInstance.dates" :editable="true"></inText>
+            </td>
+            <td>
+              <inText v-model="newInstance.commentaires" :editable="true"></inText>
+            </td>
+            <td>
+              <listeFichiers :fichiers="newInstance.fichiers"></listeFichiers>
+              <in-file @add="ajoutFichierInstance($event, newInstance)"></in-file>
+            </td>
+            <td class="txt-center">
+              <button class="btn btn-primary btn-sm pointer mb10" @click="sauveInstance">Valider</button>
+            </td>
+          </tr>
+        </tbody>
+      </table>
+
+      <!-- Moment de validation instances liées à la phase -->      
       <div class="serif fs-13 mt10 bold">Moment de validation :</div>
       <table class="table table-sm infos">
         <thead>
@@ -52,6 +105,7 @@
         </tbody>
       </table>
 
+      <!-- Dépenses et recettes liées à la phase -->
       <div class="serif fs-13 mt10 bold">Dépenses de fonctionnement (prestation, animation, expertise ...) :</div>
       <listeTransactions
         :projet="projet"
@@ -104,16 +158,32 @@
     import inTypeEtape from './inTypeEtape'
     import inFile from './inFile'
     import itemFichier from './itemFichier'
+    import listeFichiers from './listeFichiers'
 
     export default {
-        components: { inLongText, inNumber, inText, listeTransactions, inMonth, inDuration, inTypeEtape, inFile, itemFichier },
+        components: { inLongText, inNumber, inText, listeTransactions, inMonth, inDuration, inTypeEtape, inFile, itemFichier, listeFichiers },
         props: { projet: { type: Object, default: {} }, etape: { type: Object }, editable: { type: Boolean, default: false }},
+        data () {
+          return {
+            newInstance : { nom: "", dates: "", commentaires: "", fichiers: [] }
+          }
+        },
         methods: {
           sauveTransaction (transaction) {
             this.etape.transactions.push(transaction)
           },
           ajoutValidationFichier (fichier) {
             this.etape.validationFichier = fichier
+          },
+          sauveInstance () {
+            this.etape.instances.push($.extend({}, this.newInstance))
+            this.newInstance = { nom: "", dates: "", commentaires: "" }
+          },
+          ajoutFichierInstance (fichier, instance) {
+            if (typeof instance.fichiers === 'undefined') {
+              instance.fichiers = []
+            }
+            instance.fichiers.push(fichier)
           }
         }
     }
