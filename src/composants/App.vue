@@ -1,12 +1,27 @@
+<!--
+ COMPOSANT PRINCIPAL
+-->
 <template>
   <div id="app">
+    <!-- Menu haut -->
     <menuHaut v-show="$store.state.user.connecte"></menuHaut>
+    <!-- FIN Menu haut -->
+
+    <!-- Contenu principal -->
     <div id="routerView" v-show="$store.state.user.connecte">
       <router-view></router-view>
     </div>
-    <loginForm v-show="!$store.state.user.connecte"></loginForm>
+    <!-- FIN Contenu principal -->
 
+    <!-- Formulaire de connexion -->
+    <loginForm v-show="!$store.state.user.connecte"></loginForm>
+    <!-- FIN Formulaire de connexion -->
+
+    <!-- Messages popup -->
     <popupMessages></popupMessages>
+    <!-- FIN Messages popup -->
+
+    <!-- Fenêtre modale -->
     <div class="modal fade" id="modaleGlobale" tabindex="-1" role="dialog" aria-hidden="true" :class="{grande : $store.state.modale.grande}">
       <div class="modal-dialog modal-lg" role="document">
         <div class="modal-content">
@@ -26,6 +41,7 @@
         </div>
       </div>
     </div>
+    <!-- FIN Fenêtre modale -->
   </div>
 </template>
 

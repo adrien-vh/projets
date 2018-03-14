@@ -1,3 +1,6 @@
+<!--
+  FORMULAIRE DE PRÉSENTATION DÉTAILLÉE D'UNE FICHE PROJET
+-->
 <template>
     <div>
       <table class="form">
@@ -9,30 +12,29 @@
             <inLongText v-model="projet.objectifs" placeholder="Description du projet" :editable="editable"></inLongText>
           </td>
         </tr>
-        <tr>
-          <th colspan="2">Planning détaillé du projet :</th>
-        </tr>
       </table>      
     </div>
 </template>
 
 <script>
-import inLongText from "../elements/inLongText";
-import inNumber from "../elements/inNumber";
-import inText from "../elements/inText";
-import inFile from "../elements/inFile";
-import listeFichiers from "../elements/listeFichiers";
+  /**
+  * @prop {Object}  [projet={}]       Projet concerné
+  * @prop {Boolean} [editable=false]  Contenu éditable ?
+  */
 
-export default {
-  components: { inLongText, inNumber, inText, inFile, listeFichiers },
-  props: {
-    projet: { type: Object, default: {} },
-    editable: { type: Boolean, default: false },
-    numProjet: { type: String, default: "" }
-  }
-};
+  import inLongText from "../elements/inLongText";
+  import inNumber from "../elements/inNumber";
+  import inText from "../elements/inText";
+  import inFile from "../elements/inFile";
+  import listeFichiers from "../elements/listeFichiers";
+
+  export default {
+    components: { inLongText, inNumber, inText, inFile, listeFichiers },
+    props: {
+      projet: { type: Object, default: {} },
+      editable: { type: Boolean, default: false }
+    }
+  };
 </script>
 
-<style scoped lang="scss">
-
-</style>
+<style scoped lang="scss"></style>

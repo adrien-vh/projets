@@ -1,5 +1,9 @@
+<!--
+  INPUT CHOIX MULTIPLE
+-->
 <template>
   <div>
+    <!-- Affichage de l'élément choisi -->
     <span v-for="element in listeElements" :key="element[champValeur]" v-if="element[champValeur] == value">
       <span v-show="editable">
         <i class="fa fa-square" aria-hidden="true" :style="{ color: '#' + element[champCouleur] }" v-if="champCouleur"></i>
@@ -10,6 +14,7 @@
       </span>
     </span>
     
+    <!-- Affichage de la liste des choix -->
     <div class="choix" v-show="editing">
       <span v-for="element in listeElements" :key="element[champValeur]">
         <a href="#" @click.prevent="updateValue(element[champValeur])" :data-valeur="element[champValeur]">
@@ -21,6 +26,14 @@
 </template>
 
 <script>
+  /**
+  * @prop {Object}  value           Élément choisi
+  * @prop {Boolean} editable        Contenu éditable ?
+  * @prop {Array}   listeElements   Liste des éléments
+  * @prop {String}  champValeur     Propriété de l'élement retourné comme valeur
+  * @prop {String}  champLabel      Propriété de l'élément utilisé comme label
+  * @prop {String}  champCouleur    Propriété de l'élément utilisé comme couleur
+  */
 export default {
     props: {
         value: {},
@@ -32,13 +45,15 @@ export default {
     },
     data () {
       return {
-        editing: false
+        editing: false    // Édition en cours
       }
     },
     methods: {
+        /* Mise à jour de la valeur */
         updateValue (value) {
           this.$emit('input', value)
         },
+        /* Masquage de la liste de choix */
         onBlur (event) {
           if (event.relatedTarget) if (event.relatedTarget.getAttribute("data-valeur")) {
             this.updateValue(event.relatedTarget.getAttribute("data-valeur"))

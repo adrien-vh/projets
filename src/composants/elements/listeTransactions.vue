@@ -40,11 +40,10 @@
 <script>
 import inText from "../elements/inText";
 import inNumber from "../elements/inNumber";
-import inDate from "../elements/inDate";
 import inMonth from "../elements/inMonth";
 
 export default {
-  components: { inText, inNumber, inDate, inMonth },
+  components: { inText, inNumber, inMonth },
   data () {
     return {
       newTransaction : { intitule: "", date: moment(), montant: 0 }

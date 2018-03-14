@@ -1,6 +1,9 @@
+<!--
+ FICHE PHASE
+-->
 <template>
     <div class="fs-13">
-      <!-- Données standards de la phase -->
+      <!-- Données d'ordre général -->
       <div class="serif fs-13 mt10 bold">Nom de la phase :</div>
       <inText v-model="etape.nom" :editable="editable"></inText>
       <table class="form">
@@ -20,14 +23,14 @@
             <td>{{ $formatDate($stepEndDate(etape)) }}</td>
             <td><inTypeEtape v-model="etape.num_typeEtape" :editable="editable"></inTypeEtape></td>
         </tr>
-        
       </table>
       <div class="serif fs-13 mt10 bold">Objectifs :</div>
       <inLongText v-model="etape.objectifs" :editable="editable"></inLongText>
       <div class="serif fs-13 mt10 bold">Commentaires :</div>
       <inLongText v-model="etape.commentaires" :editable="editable"></inLongText>
-
-      <!-- Étapes instances liées à la phase -->
+      <!-- FIN Données d'ordre général -->
+      
+      <!-- Tableau des étapes / instances -->
       <div class="serif fs-13 mt10 bold">Étapes / instances :</div>
       <div v-show="!editable && etape.instances.length === 0" class="fs-12">(Aucun enregistrement)</div>
       <table class="table table-hover table-sm table-striped infos" v-show="editable || etape.instances.length > 0">
@@ -77,8 +80,9 @@
           </tr>
         </tbody>
       </table>
+      <!-- FIN Tableau des étapes / instances -->
 
-      <!-- Moment de validation instances liées à la phase -->      
+      <!-- Moment de validation lié à la phase -->      
       <div class="serif fs-13 mt10 bold">Moment de validation :</div>
       <table class="table table-sm infos">
         <thead>
@@ -104,8 +108,9 @@
           </tr>
         </tbody>
       </table>
+      <!-- FIN Moment de validation lié à la phase -->      
 
-      <!-- Dépenses et recettes liées à la phase -->
+      <!-- Tableaux des dépenses et recettes liées à la phase -->
       <div class="serif fs-13 mt10 bold">Dépenses de fonctionnement (prestation, animation, expertise ...) :</div>
       <listeTransactions
         :projet="projet"
@@ -145,48 +150,81 @@
         :editable="editable"
         @create="sauveTransaction($event)"
       ></listeTransactions>
+      <!-- FIN Tableaux des dépenses et recettes liées à la phase -->
     </div>
 </template>
 
 <script>
-    import inLongText from './inLongText'
-    import inNumber from './inNumber'
-    import inText from './inText'
-    import listeTransactions from './listeTransactions'
-    import inMonth from './inMonth'
-    import inDuration from './inDuration'
-    import inTypeEtape from './inTypeEtape'
-    import inFile from './inFile'
-    import itemFichier from './itemFichier'
-    import listeFichiers from './listeFichiers'
+  /**
+  * @prop {Object}  [projet={}]       Projet auquel est rattaché la phase
+  * @prop {Object}  etape             Phase concernée par la fiche
+  * @prop {Boolean} [editable=false]  Contenu éditable ?
+  */
 
-    export default {
-        components: { inLongText, inNumber, inText, listeTransactions, inMonth, inDuration, inTypeEtape, inFile, itemFichier, listeFichiers },
-        props: { projet: { type: Object, default: {} }, etape: { type: Object }, editable: { type: Boolean, default: false }},
-        data () {
-          return {
-            newInstance : { nom: "", dates: "", commentaires: "", fichiers: [] }
-          }
-        },
-        methods: {
-          sauveTransaction (transaction) {
-            this.etape.transactions.push(transaction)
-          },
-          ajoutValidationFichier (fichier) {
-            this.etape.validationFichier = fichier
-          },
-          sauveInstance () {
-            this.etape.instances.push($.extend({}, this.newInstance))
-            this.newInstance = { nom: "", dates: "", commentaires: "" }
-          },
-          ajoutFichierInstance (fichier, instance) {
-            if (typeof instance.fichiers === 'undefined') {
-              instance.fichiers = []
-            }
-            instance.fichiers.push(fichier)
+  import inLongText from './inLongText'
+  import inNumber from './inNumber'
+  import inText from './inText'
+  import listeTransactions from './listeTransactions'
+  import inMonth from './inMonth'
+  import inDuration from './inDuration'
+  import inTypeEtape from './inTypeEtape'
+  import inFile from './inFile'
+  import itemFichier from './itemFichier'
+  import listeFichiers from './listeFichiers'
+
+  export default {
+      components: { inLongText, inNumber, inText, listeTransactions, inMonth, inDuration, inTypeEtape, inFile, itemFichier, listeFichiers },
+      props: { projet: { type: Object, default: {} }, etape: { type: Object }, editable: { type: Boolean, default: false }},
+      data () {
+        return {
+          /* Modèle d'une nouvelle instance */
+          newInstance : {
+            nom: "",
+            dates: "",
+            commentaires: "",
+            fichiers: []
           }
         }
-    }
+      },
+      methods: {
+        /** 
+        * Ajout d'une transaction (dépense / recette) à la phase
+        * 
+        * @param  {Object}  transaction    Nouvelle transaction à ajouter
+        */
+        sauveTransaction (transaction) {
+          this.etape.transactions.push(transaction)
+        },
+
+        /** 
+        * Ajout d'un nouveau fichier de validation
+        * 
+        * @param  {String}  num_fichier  Index du fichier à joindre
+        */
+        ajoutValidationFichier (num_fichier) {
+          this.etape.validationFichier = num_fichier
+        },
+
+        /* Ajout d'une instance à la phase et réinitialisation de l'objet nouvelle instance */
+        sauveInstance () {
+          this.etape.instances.push($.extend({}, this.newInstance))
+          this.newInstance = { nom: "", dates: "", commentaires: "" }
+        },
+
+        /** 
+        * Ajout d'un fichier à une instance
+        * 
+        * @param  {String}  num_fichier Index du fichier à ajouter
+        * @param  {Object}  instance    Instance à laquelle ajouter le fichier
+        */
+        ajoutFichierInstance (num_fichier, instance) {
+          if (typeof instance.fichiers === 'undefined') {
+            instance.fichiers = []
+          }
+          instance.fichiers.push(num_fichier)
+        }
+      }
+  }
 </script>
 
 <style scoped lang="scss">

@@ -1,3 +1,6 @@
+<!--
+  INPUT DURÉE (EN MOIS)
+-->
 <template>
     <inNumber
         v-model="currentValue"
@@ -11,6 +14,12 @@
 </template>
 
 <script>
+  /**
+  * @prop {Object}  value           Valeur choisi
+  * @prop {Boolean} editable        Contenu éditable ?
+  * @prop {Number}  defaultValue    Valeur par défaut
+  * @prop {Number}  minValue        Valeur minimale
+  */
 import inNumber from '../elements/inNumber'
 
 export default {

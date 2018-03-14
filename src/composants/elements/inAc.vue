@@ -1,4 +1,6 @@
-
+<!--
+  INPUT AVEC AUTOCOMPLETION
+-->
 <template>
   <div :class="`autocomplete-wrapper`">
     <input
@@ -56,20 +58,12 @@
       placeholder: String,
       value: String,
       editable: { type: Boolean, default: true },
-
-      source: {
-        type: Array,
-        required: true
-      },
-
+      source: { type: Array, required: true },
       labelField: { type: String, required: true },
       valueField: { type: String, required: true },
 
       // minimum length
-      min: {
-        type: Number,
-        default: 0
-      },
+      min: { type: Number, default: 0 },
 
       // Callback
       onInput: Function,

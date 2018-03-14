@@ -1,3 +1,6 @@
+<!--
+  FORMULAIRE DE PRÉSENTATION GÉNÉRALE D'UNE FICHE PROJET
+-->
 <template>
     <table class="form">
         <tr>
@@ -92,21 +95,22 @@
 </template>
 
 <script>
-    import inLongText from './inLongText'
-    import inNumber from './inNumber'
-    import inText from './inText'
-    import inChoixMultiple from './inChoixMultiple'
-    import inAc from './inAc'
+  /**
+  * @prop {Object}  [projet={}]       Projet concerné
+  * @prop {Boolean} [editable=false]  Contenu éditable ?
+  */
 
-    export default {
-        components: { inLongText, inNumber, inText, inChoixMultiple, inAc },
-        props: { projet: { type: Object, default: {} }, editable: { type: Boolean, default: false }},
+  import inLongText from './inLongText'
+  import inNumber from './inNumber'
+  import inText from './inText'
+  import inChoixMultiple from './inChoixMultiple'
+  import inAc from './inAc'
 
-        methods: {
-            setChefProjet (utilisateur) {
-            }
-        }
-    }
+  export default {
+    components: { inLongText, inNumber, inText, inChoixMultiple, inAc },
+    props: { projet: { type: Object, default: {} }, editable: { type: Boolean, default: false }},
+    methods: { }
+  }
 </script>
 
 <style scoped lang="scss">

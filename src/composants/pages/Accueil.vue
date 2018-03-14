@@ -1,10 +1,14 @@
+<!--
+ PAGE D'ACCUEIL
+ -->
 <template>
   <div id="pageAccueil">
+
+    <!-- Titre de la page -->
     <div class="titre-page">Accueil</div>
-    <!--<div id="contBouton">
-      <a href="#" class="fs-18" @click.prevent="newProject"><i class="fa fa-plus" aria-hidden="true"></i> Nouveau projet</a>
-    </div>-->
-    <!--<h2>Synthèses</h2>-->
+    <!-- FIN Titre de la page -->
+
+    <!-- Liens vers les synthèses -->
     <div id="listeSyntheses">
       <div class="small-card pa10">
         <i class="fa fa-money fa-2x" aria-hidden="true"></i><br>
@@ -13,13 +17,14 @@
         <i class="fa fa-wpforms fa-2x" aria-hidden="true"></i><br>
         Planning global
       </div>
-      <!--<router-link to="login"><i class="fa fa-wpforms" aria-hidden="true"></i> Récapitulatif financier</router-link>
-      <router-link to="login"><i class="fa fa-wpforms" aria-hidden="true"></i> Planning global</router-link>-->
     </div>
-    <!--<h2>Projets en cours</h2>-->
+    <!-- FIN Liens-->
+
+    <!-- Liste des projets accessibles à l'utilisateur -->
     <div class="cards-container">
+
+      <!-- Carte "Nouveau Projet" -->
       <div class="project-card pointer card hvr-pop" @click="newProject" v-show="$niveauAcces(0) > 0">
-        
         <div class="nom"><div>NOUVEAU PROJET</div></div>
         <img src="../../assets/images/plus_116.png">
         <div class="fin">&nbsp;</div>
@@ -27,6 +32,9 @@
         <div class="fs-12 txt-grey">&nbsp;</div>
         <div>&nbsp;</div>
       </div>
+      <!-- FIN Carte "Nouveau Projet" -->
+
+      <!-- Cartes des projets -->
       <div v-for="projet in projets" :key="projet.num_projet" class="project-card pointer card hvr-grow" @click="openProject(projet.num_projet)">
         <div v-for="axe in $store.state.axes" :key="axe.num_axe" class="bandeau-axe" :style="{ backgroundColor: '#' + axe.couleur }" v-if="axe.num_axe == projet.num_axe"></div>
         <div class="nom"><div>{{ projet.nom }}</div></div>
@@ -39,7 +47,10 @@
         <div class="fs-12 mt10 txt-grey h45p oh pr15 pl15" v-for="direction in $store.state.directions" :key="direction.num_direction" v-if="direction.num_direction == projet.num_direction">{{ direction.nom }}</div>
         <div class="fs-12">{{ $userName(projet.chefProjet) }}&nbsp;</div>
       </div>
+      <!-- FIN Cartes des projets -->
+
     </div>
+    <!-- FIN Liste des projets accessibles à l'utilisateur -->
   </div>
 </template>
 
@@ -47,27 +58,40 @@
 export default { 
   data () {
     return {
-      projets: []
+      projets: [] // Liste des projets
     }
   },
   methods : {
-    newProject () {
-      this.$router.push('/projet')
-    },
+    newProject () { this.$router.push('/projet') }, // Navigation vers la page nouveau projet
+
+    /** 
+    * Décalage temporel d'un projet
+    * 
+    * @param  {Object}  projet  Objet projet tel que retourné par le serveur au chargement de la liste des projets
+    */
     delta (projet) {
       return projet.fin.diff(projet.finPrev, 'months') - 1
     },
-    openProject (num_projet) {
-      this.$router.push("/projet/" + num_projet)
-    }
+
+    /** 
+    * Ouverture d'une fiche projet (=navigation vers la page idoine)
+    * 
+    * @param  {String}  num_projet  Index du projet
+    */
+    openProject (num_projet) { this.$router.push("/projet/" + num_projet) }
   },
   mounted () {
     var me = this, i
+
+    /* Chargement de la liste des projets */
     this.$$ServerCall (C.LISTE_PROJETS, function (data) {
+
+      /* Transformation en objet moment des date de fin et de fin prévisionnelle */
       for (i = 0; i < data[C.LISTE_PROJETS].length; i += 1) {
         data[C.LISTE_PROJETS][i].fin = data[C.LISTE_PROJETS][i].fin ? moment(data[C.LISTE_PROJETS][i].fin, "YYYY-MM-DD") : moment()
         data[C.LISTE_PROJETS][i].finPrev = data[C.LISTE_PROJETS][i].finPrev ? moment(data[C.LISTE_PROJETS][i].finPrev, "YYYY-MM-DD") : moment()
       }
+      
       me.projets = data[C.LISTE_PROJETS]
     })
   }
