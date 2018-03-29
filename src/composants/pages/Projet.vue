@@ -17,6 +17,13 @@
     <!-- Barre latérale -->
     <nav v-show="niveauAcces >= 0">
       
+      <!-- Menu premier niveau -->
+      <ul class="menu-haut">
+        <li><a href="#" :class="{ active: activePage == 'fiche' }" @click.prevent="activePage = 'fiche'; goTo('fiche')">FICHE</a></li>
+        <li><a href="#" :class="{ active: activePage == 'phases' }" @click.prevent="activePage = 'phases'; goTo('phases')">PHASES</a></li>
+      </ul>
+      <!-- FIN Menu premier niveau -->
+
       <!-- Alerte obsolète -->
       <span v-show="!isLastVersion" class="fs-14 txt-white w100 txt-center ib bg-red pt20 pb20 br10 mb10">
         <i class="fa fa-exclamation-triangle fa-2x" aria-hidden="true"></i><br>
@@ -34,13 +41,15 @@
       <!-- FIN Météo du projet -->
 
       <!-- Menu -->
-      <ul>
+      <ul v-show="activePage == 'fiche'">
         <li><a href="#" :class="{ active: activePart == 'fiche' }" @click.prevent="goTo('fiche')">Présentation</a></li>
         <li><a href="#" :class="{ active: activePart == 'analyse' }" @click.prevent="goTo('analyse')">Présentation détaillée</a></li>
         <li><a href="#" :class="{ active: activePart == 'financement' }" @click.prevent="goTo('financement')">Financement</a></li>
-        <li><a href="#" :class="{ active: activePart == 'phases' }" @click.prevent="goTo('phases')">Calendrier</a></li>
-        <li><a href="#" :class="{ active: activePart == 'fiches' }" @click.prevent="goTo('fiches')">Fiche phase</a></li>
         <li><a href="#" :class="{ active: activePart == 'droits' }" @click.prevent="goTo('droits')">Droits d'accès</a></li>
+      </ul>
+      <ul v-show="activePage == 'phases'">
+        <li><a href="#" :class="{ active: activePart == 'phases' }" @click.prevent="goTo('phases')">Calendrier</a></li>
+        <li><a href="#" :class="{ active: activePart == 'fiches' }" @click.prevent="goTo('fiches')">Fiche(s) phase(s)</a></li>
       </ul>
       <!-- FIN Menu -->
 
@@ -86,7 +95,7 @@
     <!-- FIN Barre latérale -->
 
     <!-- Fiche projet -->
-    <div class="contenu" v-show="niveauAcces >= 0">
+    <div class="contenu" v-show="niveauAcces >= 0 && activePage=='fiche'">
       
       <table class="form" v-show="editing">
         <tr><th>Nom du projet :</th></tr>
@@ -101,11 +110,21 @@
       
       <h5 id="financement" class="part">Financement :</h5>
       <listeFinancements :projet="projet" :editable="editing"></listeFinancements>
+            
+      <h5 id="droits" class="part">Droits d'accès</h5>
+      <listeDroits :projet="projet" :editable="editing"></listeDroits>
 
+
+      
+    </div>  
+
+    <!-- Fiches phase -->
+    <div class="contenu" v-show="niveauAcces >= 0 && activePage=='phases'">
       <h5 id="phases" class="part">Calendrier du projet :</h5>
       <formCalendrier :numProjet="num_projet" :etapes="etapes" :editable="editing" @select="selectEtape($event)" @update="setDelta($event)"></formCalendrier>
       
       <!-- Navigation phases -->
+      <div id="fiches" class="part"></div>
       <div class="fs-18 txt-center mt20" v-show="etapeCourante !== null">
         <a href="#" :class="{ inactive: indexEtapeCourante == 0 }" @click.prevent="etapeCourante = etapes[indexEtapeCourante - 1]">
           <i aria-hidden="true" class="fa fa-chevron-left fa-lg"></i>
@@ -116,18 +135,13 @@
         </a>
       </div>
       <!-- FIN Navigation phases -->
-      
-      <!-- Fiches phase -->
-      <div id="fiches" class="part"></div>
-      <h5 class="part" v-if="etapeCourante !== null">Phase : {{ etapeCourante.nom }}</h5>
+      <h5 v-if="etapeCourante !== null">Phase : {{ etapeCourante.nom }}</h5>
       <ficheEtape :projet="projet" :etape="etapeCourante" :editable="editing" v-if="etapeCourante != null"></ficheEtape>
       <!-- FIN Fiches phase -->
-            
-      <h5 id="droits" class="part">Droits d'accès</h5>
-      <listeDroits :projet="projet" :editable="editing"></listeDroits>
 
     </div>
     <!-- FIN Fiche projet -->
+
   </div>
 </template>
 
@@ -176,6 +190,7 @@
       return {
         editing: true,        // Édition en cours ?
         activePart: "fiche",  // Partie affichée pour mise en surbrillance du menu
+        activePage: "fiche",  // Page active (fiche ou phases)
         projet: {             // Projet par défaut
           etapes: [],
           droits: [],
@@ -284,23 +299,47 @@
           if (data.projet[C.ETAPES].length > 0) {
             me.etapeCourante = data.projet[C.ETAPES][0]
           }
+
+          // S'il s'agit d'un nouveau projet, l'utilisateur courant est créateur
+          if (parseInt(me.num_projet) === 0) {
+            me.projet.createur = me.$store.state.user.login
+          }
+
         }, donnees, [this.transformTables.projet] )
       },
 
       /* Validation du projet (=sauvegarde avec validation) */
-      valideProjet () { this.sauveProjet(true) },
+      valideProjet () { 
+        var me = this
+        this.$showModal(
+          "Validation du projet",
+          'Êtes vous sûr de vouloir valider la version n°' + this.projet.version + ' du projet "' + this.projet.nom + '" ?',
+          false,
+          true,
+          function () {
+            me.sauveProjet(true)
+          }
+        )
+      },
 
       /* Détection de la position du scroll pour la surbrillance du projet */
       onScroll () {
         var scrollPosition = (document.documentElement.scrollTop || document.body.scrollTop) + 200, 
-            parts = document.querySelectorAll(".part"),
-            i
+            parts = $(".part:visible"),
+            i,
+            activePart = parts[0].id
         
+        console.log(scrollPosition - 200)
+
         for (i = 0; i < parts.length; i += 1) {
           if (parts[i].offsetTop <= scrollPosition) {
-            this.activePart = parts[i].id
+            activePart = parts[i].id
           }
         }
+
+        console.log(activePart)
+
+        this.activePart = activePart
       }
     },    
     mounted () {
@@ -333,7 +372,7 @@
       }
     }
 
-    h5.part {
+    h5 {
       background-color: $CN5;
       color: #fff;
       margin-top: 25px;
@@ -374,6 +413,35 @@
 
             &:hover {
               text-decoration: none;
+            }
+          }
+        }
+
+        &.menu-haut {
+          margin-bottom: 0;
+          li {
+            &:first-child a {
+              border-radius: 5px 5px 0 0;
+              border-width: 1px 1px 0 1px;
+              border-color: $CN5;
+              border-style: solid;
+            }
+            &:last-child a {
+              border-radius: 0 0 5px 5px;
+              border-width: 0 1px 1px 1px;
+              border-color: $CN5;
+              border-style: solid;
+            }
+
+            a {
+              background-color: $CN0;
+              text-align: center;
+              padding: 3px;
+              border: none;
+
+              &.active {
+                background-color: $CB06;
+              }
             }
           }
         }

@@ -63,31 +63,5 @@
     padding: 0 0px 250px;
   }
 
-  #modaleGlobale {
-
-    &.grande {
-      .modal-dialog {
-        height: 100%;
-      }
-
-      .modal-content {
-        height: calc(100% - 50px);
-      }
-    }
-
-    .modal-body {
-      height: 100%;
-      iframe {
-        width: 100%;
-        height: 100%;
-      }
-    }
-
-    .modal-footer {
-      button {
-        cursor: pointer;
-      }
-    }
-  }
   
 </style>

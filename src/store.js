@@ -53,6 +53,7 @@ export default new Vuex.Store ({
   mutations: {
     logout (state) {
       state.user.connecte = false
+      state.user.droitsProjets = []
     },
     setUser (state, user) {
       $.extend(state.user, user)
