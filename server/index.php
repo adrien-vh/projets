@@ -117,7 +117,6 @@ switch ($action) {
 			$retour[MESSAGES][] = array( type => ERROR, text => "Vous n'avez pas accès à ce projet" );
 		} else {
 			$retour[PROJET] = $bdd->chargeProjet($_POST[NUM_PROJET]);
-			$retour[INSTANCES] = $bdd->chargeInstances($_POST[NUM_PROJET]);
 			$retour[PROJET]->{FINANCEMENT} = $bdd->chargeFinancements($_POST[NUM_PROJET]);
 			$retour[PROJET]->{ETAPES} = $bdd->chargeEtapes($_POST[NUM_PROJET]);
 

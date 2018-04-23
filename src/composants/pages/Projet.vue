@@ -505,6 +505,7 @@
       }
       
       th {
+        color: $CB18;
         padding-top: 15px;
         font-family: ibm-plex-serif;
         font-size: 13px;

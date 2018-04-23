@@ -435,6 +435,27 @@ class Bdd {
 		));
 	}
 
+	public function nomAxe ($_num_axe) {
+		return $this->varFromRequete(
+			"SELECT nom FROM axe WHERE num_axe = :num_axe",
+			array(":num_axe" => $_num_axe)
+		);
+	}
+
+	public function nomSousAxe ($_num_sousAxe) {
+		return $this->varFromRequete(
+			"SELECT nom FROM sousAxe WHERE num_sousAxe = :num_sousAxe",
+			array(":num_sousAxe" => $_num_sousAxe)
+		);
+	}
+
+	public function nomDirection ($_num_direction) {
+		return $this->varFromRequete(
+			"SELECT nom FROM direction WHERE num_direction = :num_direction",
+			array(":num_direction" => $_num_direction)
+		);
+	}
+
 	private function num_projetLies ($_num_projet) {
 		return $this->simpleArrayFromRequete(
 			"SELECT num_projet FROM projet WHERE num_projetInitial = :num_projetInitial",

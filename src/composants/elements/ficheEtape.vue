@@ -4,7 +4,7 @@
 <template>
     <div class="fs-13">
       <!-- Données d'ordre général -->
-      <div class="serif fs-13 mt10 bold">Nom de la phase :</div>
+      <div class="titre-formulaire">Nom de la phase :</div>
       <inText v-model="etape.nom" :editable="editable"></inText>
       <table class="form">
         <tr>
@@ -24,14 +24,14 @@
             <td><inTypeEtape v-model="etape.num_typeEtape" :editable="editable"></inTypeEtape></td>
         </tr>
       </table>
-      <div class="serif fs-13 mt10 bold">Objectifs :</div>
+      <div class="titre-formulaire ">Objectifs :</div>
       <inLongText v-model="etape.objectifs" :editable="editable"></inLongText>
-      <div class="serif fs-13 mt10 bold">Commentaires :</div>
+      <div class="titre-formulaire ">Commentaires :</div>
       <inLongText v-model="etape.commentaires" :editable="editable"></inLongText>
       <!-- FIN Données d'ordre général -->
       
       <!-- Tableau des étapes / instances -->
-      <div class="serif fs-13 mt10 bold">Étapes / instances :</div>
+      <div class="titre-formulaire ">Étapes / instances :</div>
       <div v-show="!editable && etape.instances.length === 0" class="fs-12">(Aucun enregistrement)</div>
       <table class="table table-hover table-sm table-striped infos" v-show="editable || etape.instances.length > 0">
         <thead>
@@ -83,7 +83,7 @@
       <!-- FIN Tableau des étapes / instances -->
 
       <!-- Moment de validation lié à la phase -->      
-      <div class="serif fs-13 mt10 bold">Moment de validation :</div>
+      <div class="titre-formulaire ">Moment de validation :</div>
       <table class="table table-sm infos">
         <thead>
           <tr>
@@ -111,7 +111,7 @@
       <!-- FIN Moment de validation lié à la phase -->      
 
       <!-- Tableaux des dépenses et recettes liées à la phase -->
-      <div class="serif fs-13 mt10 bold">Dépenses de fonctionnement (prestation, animation, expertise ...) :</div>
+      <div class="titre-formulaire ">Dépenses de fonctionnement (prestation, animation, expertise ...) :</div>
       <listeTransactions
         :projet="projet"
         :transactions="etape.transactions"
@@ -121,7 +121,7 @@
         @create="sauveTransaction($event)"
       ></listeTransactions>
       
-      <div class="serif fs-13 mt10 bold">Recettes de fonctionnement :</div>
+      <div class="titre-formulaire ">Recettes de fonctionnement :</div>
       <listeTransactions
         :projet="projet"
         :transactions="etape.transactions"
@@ -131,7 +131,7 @@
         @create="sauveTransaction($event)"
       ></listeTransactions>
 
-      <div class="serif fs-13 mt10 bold">Dépenses d'investissement :</div>
+      <div class="titre-formulaire ">Dépenses d'investissement :</div>
       <listeTransactions
         :projet="projet"
         :transactions="etape.transactions"
@@ -141,7 +141,7 @@
         @create="sauveTransaction($event)"
       ></listeTransactions>
 
-      <div class="serif fs-13 mt10 bold">Recettes d'investissement :</div>
+      <div class="titre-formulaire ">Recettes d'investissement :</div>
       <listeTransactions
         :projet="projet"
         :transactions="etape.transactions"
@@ -228,4 +228,11 @@
 </script>
 
 <style scoped lang="scss">
+@import "../../styles/copic";
+.titre-formulaire {
+  color: $CB18;
+  font-family: ibm-plex-serif;
+  font-size: 13px;
+  font-weight: bold;
+}
 </style>
