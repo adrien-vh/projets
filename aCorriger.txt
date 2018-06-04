@@ -1,0 +1,4 @@
+ - Changements de droits sur les projets visibles lorsque l'on change d'utilisateur
+ - Droits des anciens chefs de projets
+
+ - Ajout de points d'étapes sur le Gantt

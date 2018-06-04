@@ -405,6 +405,23 @@ class Bdd {
 	}
 
 	public function droitsParUtilisateur($_login) {
+		if (intval($this->varFromRequete(
+			"SELECT COUNT(*) FROM relecteurs WHERE login=:login",
+			array( ":login" => $_login )
+		)) > 0) {
+			return $this->arrayFromRequete(
+				"SELECT num_projet, MAX(niveau) AS niveau FROM (
+					SELECT IFNULL((SELECT p.num_projetInitial FROM projet p WHERE p.num_projet = pr.num_projet), -1) AS num_projet, 0 AS niveau FROM projet pr
+					UNION
+					SELECT IFNULL((SELECT p.num_projetInitial FROM projet p WHERE p.num_projet = d.num_projet), -1) AS num_projet, d.niveau FROM droit d WHERE d.login = :login
+					UNION
+					SELECT IFNULL((SELECT p.num_projetInitial FROM projet p WHERE p.num_projet = pr.num_projet), -1), 2 AS niveau FROM projet pr WHERE pr.chefProjet = :login OR pr.createur = :login
+				) AS droits
+				GROUP BY num_projet
+				ORDER BY num_projet",
+				array( ":login" => $_login )
+			);
+		}
 		return $this->arrayFromRequete(
 			"SELECT IFNULL((SELECT p.num_projetInitial FROM projet p WHERE p.num_projet = d.num_projet), -1) AS num_projet, d.niveau FROM droit d WHERE d.login = :login
 			UNION

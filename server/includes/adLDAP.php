@@ -108,7 +108,7 @@ class adLDAP {
     * 
     * @var array
     */
-    protected $domainControllers = array("srvdc01.cc-bassinpompey.local");
+    protected $domainControllers = array("srvdc1.cc-bassinpompey.local");
 	
     /**
     * Optional account with higher privileges for searching

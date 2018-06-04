@@ -9,7 +9,7 @@
     <!-- FIN Titre de la page -->
 
     <!-- Liens vers les synthèses -->
-    <div id="listeSyntheses">
+   <!-- <div id="listeSyntheses">
       <div class="small-card pa10">
         <i class="fa fa-money fa-2x" aria-hidden="true"></i><br>
         Récapitulatif financier
@@ -17,7 +17,7 @@
         <i class="fa fa-wpforms fa-2x" aria-hidden="true"></i><br>
         Planning global
       </div>
-    </div>
+    </div>-->
     <!-- FIN Liens-->
 
     <!-- Liste des projets accessibles à l'utilisateur -->
@@ -154,7 +154,7 @@ export default {
           vertical-align: middle;
           text-align: center;
           padding-top: 10px;
-          font-size: 15px;
+          font-size: 13px;
           /*border: 1px solid #333;*/
           height: 100px;
           font-weight: bold;
